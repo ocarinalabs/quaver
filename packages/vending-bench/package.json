@@ -1,0 +1,34 @@
+{
+  "name": "@quaver/vending-bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "start": "bun --env-file=.env.local run src/run.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./benchmark": {
+      "types": "./src/benchmark.ts",
+      "default": "./dist/benchmark.js"
+    }
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@exalabs/ai-sdk": "^1.0.4",
+    "@types/node": "^24.10.1",
+    "ai": "^5.0.113",
+    "dotenv": "^17.2.3",
+    "tsx": "^4.20.6",
+    "zod": "^4.1.13"
+  }
+}

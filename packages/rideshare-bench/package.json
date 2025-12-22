@@ -1,0 +1,30 @@
+{
+  "name": "@quaver/rideshare-bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "start": "bun --env-file=.env.local run src/run.ts",
+    "analyze": "bun run src/analyze.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@ai-sdk/gateway": "^1.0.41",
+    "@quaver/core": "workspace:*",
+    "@types/node": "^24.10.3",
+    "ai": "^5.0.113",
+    "zod": "^4.1.13"
+  }
+}

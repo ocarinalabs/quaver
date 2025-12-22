@@ -1,8 +1,11 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@quaver/typescript-config/base.json",
   "compilerOptions": {
     "outDir": "dist",
-    "rootDir": "src"
+    "rootDir": "src",
+    "strictNullChecks": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist"]

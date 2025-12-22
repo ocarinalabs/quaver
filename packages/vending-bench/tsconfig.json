@@ -1,0 +1,14 @@
+{
+  "extends": "@quaver/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "strictNullChecks": true,
+    "baseUrl": "src",
+    "paths": {
+      "@vending/*": ["./*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

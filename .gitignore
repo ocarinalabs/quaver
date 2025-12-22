@@ -36,3 +36,7 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Benchmark results DB
+packages/core/src/db/*.db
+packages/core/src/db/*.db-*
