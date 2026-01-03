@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem"],
+      "env": {
+        "ALLOWED_PATHS": "${PROJECT_ROOT}"
+      }
+    }
+  }
+}

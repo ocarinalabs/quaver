@@ -1,0 +1,45 @@
+{
+  "name": "@quaver/agent",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./agent": {
+      "types": "./src/agent/index.ts",
+      "default": "./dist/agent/index.js"
+    },
+    "./types": {
+      "types": "./src/types/index.ts",
+      "default": "./dist/types/index.js"
+    },
+    "./config/constants": {
+      "types": "./src/config/constants.ts",
+      "default": "./dist/config/constants.js"
+    },
+    "./config/hooks": {
+      "types": "./src/config/hooks.ts",
+      "default": "./dist/config/hooks.js"
+    },
+    "./config/checkpoint": {
+      "types": "./src/config/checkpoint.ts",
+      "default": "./dist/config/checkpoint.js"
+    },
+    "./mcp": {
+      "types": "./src/mcp.ts",
+      "default": "./dist/mcp.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "latest"
+  }
+}
