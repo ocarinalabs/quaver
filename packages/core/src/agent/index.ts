@@ -2,8 +2,7 @@
  * Agent Configuration
  *
  * Tool configuration and agent factory.
- *
- * [TODO]: Add your scenario-specific tools
+ * Supports both in-memory tools (default) and AgentFS (persistent storage).
  */
 
 import { createInitialState } from "@quaver/core/config/init";
@@ -11,53 +10,15 @@ import { createLogger } from "@quaver/core/logging/logger";
 import type { LogPreset } from "@quaver/core/logging/types";
 import { agentfsTools } from "@quaver/core/tools/agentfs";
 import { helloTool } from "@quaver/core/tools/hello";
-// import {
-//   kvDeleteTool,
-//   kvGetTool,
-//   kvListTool,
-//   kvSetTool,
-//   readScratchpadTool,
-//   writeScratchpadTool,
-// } from "@quaver/core/tools/memory";
+import { memoryTools } from "@quaver/core/tools/memory";
 import { adjustScoreTool, getScoreTool } from "@quaver/core/tools/score";
 import { waitForNextStepTool } from "@quaver/core/tools/time";
-import { Experimental_Agent as Agent, hasToolCall, stepCountIs } from "ai";
+import { AgentFS } from "agentfs-sdk";
+import { hasToolCall, stepCountIs, ToolLoopAgent } from "ai";
 import { SYSTEM_PROMPT } from "./prompts.js";
 
-/**
- * All tools available to the agent.
- * [TODO]: Add your scenario-specific tools.
- */
-const tools = {
-  // Core tools
-  getScore: getScoreTool,
-  adjustScore: adjustScoreTool,
-  waitForNextStep: waitForNextStepTool,
-
-  // AgentFS tools (persistent storage)
-  ...agentfsTools,
-
-  // Example tool
-  hello: helloTool,
-
-  // [TODO]: Add your scenario-specific tools
-
-  // Legacy in-memory tools (commented out, replaced by agentfsTools)
-  // readScratchpad: readScratchpadTool,
-  // writeScratchpad: writeScratchpadTool,
-  // kvGet: kvGetTool,
-  // kvSet: kvSetTool,
-  // kvDelete: kvDeleteTool,
-  // kvList: kvListTool,
-};
-
-/** Maximum messages before context trimming */
 const MAX_MESSAGES = 50;
-
-/** Messages to keep after trimming */
 const KEEP_MESSAGES = 40;
-
-/** Maximum tool calls per step */
 const MAX_TOOL_CALLS_PER_STEP = 100;
 
 /**
@@ -65,18 +26,48 @@ const MAX_TOOL_CALLS_PER_STEP = 100;
  *
  * @param model - Model ID to use
  * @param logLevel - Log verbosity (default: "normal")
+ * @param options - Agent options (useAgentFS, agentId)
  * @returns Agent instance, state, and logger
+ *
+ * @example
+ * // Default: in-memory tools (safe, no external deps)
+ * const { agent } = await createAgent("google/gemini-3-flash");
+ *
+ * @example
+ * // With AgentFS persistent storage
+ * const { agent } = await createAgent("google/gemini-3-flash", "normal", {
+ *   useAgentFS: true,
+ *   agentId: "my-benchmark"
+ * });
  */
-const createAgent = (
+const createAgent = async (
   model = "openai/gpt-5.2",
-  logLevel: LogPreset = "normal"
+  logLevel: LogPreset = "normal",
+  options: { useAgentFS?: boolean; agentId?: string } = {}
 ) => {
+  const { useAgentFS = false, agentId } = options;
   const state = createInitialState();
   const logger = createLogger(logLevel);
 
-  const agent = new Agent({
+  const storageTools = useAgentFS ? agentfsTools : memoryTools;
+
+  if (useAgentFS) {
+    state.agent = await AgentFS.open({
+      id: agentId ?? crypto.randomUUID(),
+    });
+  }
+
+  const tools = {
+    getScore: getScoreTool,
+    adjustScore: adjustScoreTool,
+    waitForNextStep: waitForNextStepTool,
+    ...storageTools,
+    hello: helloTool,
+  };
+
+  const agent = new ToolLoopAgent({
     model,
-    system: SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT,
     tools,
     experimental_context: state,
     stopWhen: [
@@ -99,6 +90,14 @@ const createAgent = (
   });
 
   return { agent, state, logger };
+};
+
+const tools = {
+  getScore: getScoreTool,
+  adjustScore: adjustScoreTool,
+  waitForNextStep: waitForNextStepTool,
+  ...memoryTools,
+  hello: helloTool,
 };
 
 export { createAgent, tools };

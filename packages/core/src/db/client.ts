@@ -5,14 +5,11 @@
  * Uses @tursodatabase/database for local-first storage.
  */
 
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { connect } from "@tursodatabase/database";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-
 /** Database stored in packages/core/src/db/results.db */
-const DB_PATH = join(__dirname, "results.db");
+const DB_PATH = join(import.meta.dirname, "results.db");
 
 type Database = Awaited<ReturnType<typeof connect>>;
 

@@ -10,8 +10,10 @@
  */
 
 import { gateway } from "@quaver/core/gateway";
-import { generateObject, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
+
+const QUALITY_THRESHOLD = 7;
 
 /**
  * Example: Sequential content generation with quality check.
@@ -27,18 +29,21 @@ const runSequentialWorkflow = async (input: string) => {
   const model = gateway("openai/gpt-5.2");
 
   // Step 1: Generate initial content
-  const { text: content } = await generateText({
+  const { output: content } = await generateText({
     model,
+    output: Output.text(),
     prompt: `[TODO]: Your first step prompt. Input: ${input}`,
   });
 
   // Step 2: Evaluate quality
-  const { object: evaluation } = await generateObject({
+  const { output: evaluation } = await generateText({
     model,
-    schema: z.object({
-      score: z.number().min(1).max(10),
-      issues: z.array(z.string()),
-      suggestions: z.array(z.string()),
+    output: Output.object({
+      schema: z.object({
+        score: z.number().min(1).max(10),
+        issues: z.array(z.string()),
+        suggestions: z.array(z.string()),
+      }),
     }),
     prompt: `Evaluate this content:
     ${content}
@@ -49,10 +54,10 @@ const runSequentialWorkflow = async (input: string) => {
     3. Improvement suggestions`,
   });
 
-  // Step 3: If quality fails, regenerate
-  if (evaluation.score < 7) {
-    const { text: improvedContent } = await generateText({
+  if (evaluation.score < QUALITY_THRESHOLD) {
+    const { output: improvedContent } = await generateText({
       model,
+      output: Output.text(),
       prompt: `Improve this content based on feedback:
       ${evaluation.issues.join("\n")}
       ${evaluation.suggestions.join("\n")}

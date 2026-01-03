@@ -63,6 +63,26 @@ export const StateLog = BaseLogEntry.extend({
   label: z.string(),
 }).passthrough();
 
+// Token usage tracking
+export const UsageLog = BaseLogEntry.extend({
+  type: z.literal("usage"),
+  inputTokens: z.number().optional(),
+  outputTokens: z.number().optional(),
+  inputTokenDetails: z
+    .object({
+      noCacheTokens: z.number().optional(),
+      cacheReadTokens: z.number().optional(),
+      cacheWriteTokens: z.number().optional(),
+    })
+    .optional(),
+  outputTokenDetails: z
+    .object({
+      textTokens: z.number().optional(),
+      reasoningTokens: z.number().optional(),
+    })
+    .optional(),
+});
+
 // Union of all log types
 export const BenchmarkLogEntry = z.discriminatedUnion("type", [
   StartLog,
@@ -72,6 +92,7 @@ export const BenchmarkLogEntry = z.discriminatedUnion("type", [
   TransitionLog,
   ProgressLog,
   StateLog,
+  UsageLog,
 ]);
 
 // TypeScript types inferred from schemas
@@ -82,6 +103,7 @@ export type ToolLog = z.infer<typeof ToolLog>;
 export type TransitionLog = z.infer<typeof TransitionLog>;
 export type ProgressLog = z.infer<typeof ProgressLog>;
 export type StateLog = z.infer<typeof StateLog>;
+export type UsageLog = z.infer<typeof UsageLog>;
 export type BenchmarkLogEntry = z.infer<typeof BenchmarkLogEntry>;
 
 // Helper to parse a log file

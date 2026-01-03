@@ -32,28 +32,13 @@ type StepReport = {
  * @returns StepReport with cost status and score
  */
 const advanceStep = (state: YourBenchmarkState): StepReport => {
-  console.log(`\n${"─".repeat(50)}`);
-  console.log(`STEP TRANSITION (Step ${state.step} → ${state.step + 1})`);
-  console.log("─".repeat(50));
-
-  // 1. Apply step cost
   const cost = applyStepCost(state, STEP_COST);
 
-  if (cost.paid) {
-    console.log(`Step cost applied: ${cost.amount}`);
-  } else {
-    console.log(
-      `Step cost not applied (${cost.failureCount} consecutive failures)`
-    );
-  }
+  // [TODO]: Your step transition processing
 
-  // [TODO]: 2. Your step transition processing
-
-  // 3. Advance step
   state.step += 1;
   state.waitingForNextStep = false;
 
-  // 4. Calculate score
   const score = calculateScore(state);
 
   return {

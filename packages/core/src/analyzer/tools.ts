@@ -42,6 +42,7 @@ const getToolUsageTool = tool({
   description:
     "Get statistics on which tools were used and how often during the benchmark.",
   inputSchema: z.object({}),
+  strict: true,
   execute: (_, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     const toolLogs = state.logs.filter((l): l is ToolLog => l.type === "tool");
@@ -74,6 +75,7 @@ const getToolUsageTool = tool({
 const getDurationTool = tool({
   description: "Get the total duration of the benchmark run in seconds.",
   inputSchema: z.object({}),
+  strict: true,
   execute: (_, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     const start = state.logs.find((l) => l.type === "start");
@@ -106,6 +108,7 @@ const getThinkingTool = tool({
       .default(20)
       .describe("Maximum number of thinking blocks to return"),
   }),
+  strict: true,
   execute: ({ limit }, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     const thinking = state.logs
@@ -137,6 +140,7 @@ const getTimelineTool = tool({
       .default(50)
       .describe("Maximum events to return"),
   }),
+  strict: true,
   execute: ({ types, limit }, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     let logs = state.logs;
@@ -160,6 +164,7 @@ const getTimelineTool = tool({
 const getSummaryTool = tool({
   description: "Get overall summary statistics for the benchmark run.",
   inputSchema: z.object({}),
+  strict: true,
   execute: (_, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     const startLog = state.logs.find((l): l is StartLog => l.type === "start");
@@ -202,6 +207,7 @@ const searchLogsTool = tool({
       .default(20)
       .describe("Maximum results to return"),
   }),
+  strict: true,
   execute: ({ pattern, limit }, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     const lowerPattern = pattern.toLowerCase();
@@ -243,6 +249,7 @@ const recordFindingTool = tool({
     step: z.number().optional().describe("Step number if applicable"),
     evidence: z.string().optional().describe("Supporting evidence from logs"),
   }),
+  strict: true,
   execute: (finding, { experimental_context }) => {
     const state = experimental_context as AnalyzerState;
     state.findings.push(finding as Finding);
@@ -263,6 +270,19 @@ export const analyzerTools = {
   searchLogs: searchLogsTool,
   // Recording tool
   recordFinding: recordFindingTool,
+};
+
+/**
+ * Evaluation tools (for use with Output.object()).
+ * Does not include recordFinding - agent outputs findings directly via structured output.
+ */
+export const evaluationTools = {
+  getToolUsage: getToolUsageTool,
+  getDuration: getDurationTool,
+  getThinking: getThinkingTool,
+  getTimeline: getTimelineTool,
+  getSummary: getSummaryTool,
+  searchLogs: searchLogsTool,
 };
 
 export {

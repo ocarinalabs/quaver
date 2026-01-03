@@ -8,9 +8,6 @@ import type { BaseState } from "@quaver/core/types/state";
 import { tool } from "ai";
 import { z } from "zod";
 
-/**
- * Get current score and recent event history.
- */
 const getScoreTool = tool({
   description:
     "Get your current score and recent event history. Use this to check your progress.",
@@ -21,6 +18,7 @@ const getScoreTool = tool({
       .default(10)
       .describe("Number of recent events to return"),
   }),
+  strict: true,
   execute: ({ limit }, { experimental_context }) => {
     const state = experimental_context as BaseState;
     const recentEvents = state.events.slice(-limit);
@@ -38,10 +36,6 @@ const getScoreTool = tool({
   },
 });
 
-/**
- * Adjust the score by a given delta.
- * Records the adjustment as an event.
- */
 const adjustScoreTool = tool({
   description:
     "Adjust the score by a given amount. Positive values increase score, negative values decrease it.",
@@ -54,6 +48,7 @@ const adjustScoreTool = tool({
       .enum(["cost", "reward", "penalty"])
       .describe("Type of score adjustment"),
   }),
+  strict: true,
   execute: ({ delta, reason, type }, { experimental_context }) => {
     const state = experimental_context as BaseState;
 

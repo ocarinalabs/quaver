@@ -10,7 +10,7 @@
  */
 
 import { gateway } from "@quaver/core/gateway";
-import { generateObject } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 /**
@@ -27,21 +27,23 @@ const runOrchestratorWorkflow = async (request: string) => {
   const model = gateway("openai/gpt-5.2");
 
   // Step 1: Orchestrator creates plan
-  const { object: plan } = await generateObject({
+  const { output: plan } = await generateText({
     model,
-    schema: z.object({
-      tasks: z.array(
-        z.object({
-          id: z.string(),
-          description: z.string(),
-          workerType: z.enum(["analyst", "implementer", "reviewer"]),
-          dependencies: z.array(z.string()).optional(),
-        })
-      ),
-      estimatedComplexity: z.enum(["low", "medium", "high"]),
-    }),
     system:
       "You are a senior architect planning task execution. Break down requests into discrete tasks.",
+    output: Output.object({
+      schema: z.object({
+        tasks: z.array(
+          z.object({
+            id: z.string(),
+            description: z.string(),
+            workerType: z.enum(["analyst", "implementer", "reviewer"]),
+            dependencies: z.array(z.string()).optional(),
+          })
+        ),
+        estimatedComplexity: z.enum(["low", "medium", "high"]),
+      }),
+    }),
     prompt: `Create an execution plan for: ${request}`,
   });
 
@@ -55,15 +57,17 @@ const runOrchestratorWorkflow = async (request: string) => {
         reviewer: "You are a reviewer. Check quality and suggest improvements.",
       }[task.workerType];
 
-      const { object: result } = await generateObject({
+      const { output: result } = await generateText({
         model,
-        schema: z.object({
-          taskId: z.string(),
-          output: z.string(),
-          status: z.enum(["completed", "needs_review", "blocked"]),
-          notes: z.array(z.string()).optional(),
-        }),
         system: workerPrompt,
+        output: Output.object({
+          schema: z.object({
+            taskId: z.string(),
+            output: z.string(),
+            status: z.enum(["completed", "needs_review", "blocked"]),
+            notes: z.array(z.string()).optional(),
+          }),
+        }),
         prompt: `Execute task: ${task.description}
 
         Context: ${request}`,

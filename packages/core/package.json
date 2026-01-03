@@ -41,6 +41,18 @@
       "types": "./src/config/types.ts",
       "default": "./dist/config/types.js"
     },
+    "./db/client": {
+      "types": "./src/db/client.ts",
+      "default": "./dist/db/client.js"
+    },
+    "./db/queries": {
+      "types": "./src/db/queries.ts",
+      "default": "./dist/db/queries.js"
+    },
+    "./db/schema": {
+      "types": "./src/db/schema.ts",
+      "default": "./dist/db/schema.js"
+    },
     "./engine/scoring": {
       "types": "./src/engine/scoring.ts",
       "default": "./dist/engine/scoring.js"
@@ -97,6 +109,10 @@
       "types": "./src/types/state.ts",
       "default": "./dist/types/state.js"
     },
+    "./utils/cost": {
+      "types": "./src/utils/cost.ts",
+      "default": "./dist/utils/cost.js"
+    },
     "./utils/fees": {
       "types": "./src/utils/fees.ts",
       "default": "./dist/utils/fees.js"
@@ -132,15 +148,17 @@
   },
   "devDependencies": {
     "@quaver/typescript-config": "workspace:*",
+    "@types/bun": "latest",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "^1.0.41",
+    "@ai-sdk/devtools": "^0.0.1",
+    "@ai-sdk/gateway": "^3.0.0",
     "@libsql/client": "^0.15.15",
     "@tursodatabase/database": "^0.3.2",
     "@types/node": "^24.10.3",
     "agentfs-sdk": "^0.3.1",
-    "ai": "^5.0.113",
+    "ai": "^6.0.1",
     "dotenv": "^17.2.3",
     "pino": "^10.1.0",
     "pino-abstract-transport": "^3.0.0",

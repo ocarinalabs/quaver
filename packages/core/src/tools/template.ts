@@ -39,6 +39,7 @@ const getYourDataTool = tool({
       .default(10)
       .describe("Maximum items to return"),
   }),
+  strict: true,
   execute: ({ filter: _filter, limit: _limit }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -71,6 +72,7 @@ const doYourActionTool = tool({
     itemId: z.string().describe("ID of the item to act on"),
     amount: z.number().positive().describe("Amount for the action"),
   }),
+  strict: true,
   execute: ({ itemId, amount: _amount }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -99,6 +101,7 @@ const fetchExternalDataTool = tool({
   inputSchema: z.object({
     query: z.string().describe("Query to send to external service"),
   }),
+  strict: true,
   execute: ({ query }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 

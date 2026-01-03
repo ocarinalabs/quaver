@@ -27,6 +27,7 @@ const kvGetTool = tool({
   inputSchema: z.object({
     key: z.string().describe("The key to retrieve"),
   }),
+  strict: true,
   execute: async ({ key }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     const value = await agent.kv.get(key);
@@ -45,6 +46,7 @@ const kvSetTool = tool({
       ),
     value: z.string().describe("The value to store"),
   }),
+  strict: true,
   execute: async ({ key, value }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     await agent.kv.set(key, value);
@@ -57,6 +59,7 @@ const kvDeleteTool = tool({
   inputSchema: z.object({
     key: z.string().describe("The key to delete"),
   }),
+  strict: true,
   execute: async ({ key }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     await agent.kv.delete(key);
@@ -73,6 +76,7 @@ const kvListTool = tool({
       .default("")
       .describe("Filter keys starting with this prefix"),
   }),
+  strict: true,
   execute: async ({ prefix }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     const entries = await agent.kv.list(prefix ?? "");
@@ -93,6 +97,7 @@ const writeFileTool = tool({
       .describe("File path (e.g., /notes/plan.md, /outputs/report.txt)"),
     content: z.string().describe("Content to write"),
   }),
+  strict: true,
   execute: async ({ path, content }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     await agent.fs.writeFile(path, content);
@@ -105,6 +110,7 @@ const readFileTool = tool({
   inputSchema: z.object({
     path: z.string().describe("File path to read"),
   }),
+  strict: true,
   execute: async ({ path }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     try {
@@ -121,6 +127,7 @@ const listFilesTool = tool({
   inputSchema: z.object({
     path: z.string().default("/").describe("Directory path (default: root)"),
   }),
+  strict: true,
   execute: async ({ path }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     try {
@@ -137,6 +144,7 @@ const deleteFileTool = tool({
   inputSchema: z.object({
     path: z.string().describe("File path to delete"),
   }),
+  strict: true,
   execute: async ({ path }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     await agent.fs.deleteFile(path);
@@ -149,6 +157,7 @@ const fileStatTool = tool({
   inputSchema: z.object({
     path: z.string().describe("File path to check"),
   }),
+  strict: true,
   execute: async ({ path }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     try {
@@ -173,6 +182,7 @@ const fileExistsTool = tool({
   inputSchema: z.object({
     path: z.string().describe("File or directory path to check"),
   }),
+  strict: true,
   execute: async ({ path: filePath }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     const fs = agent.fs as typeof agent.fs & {
@@ -197,6 +207,7 @@ const toolsListTool = tool({
       .default(10)
       .describe("Maximum number of tool calls to return"),
   }),
+  strict: true,
   execute: async ({ limit }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     // Use getRecent with since=0 to get all tool calls, limited by count
@@ -210,6 +221,7 @@ const toolsGetTool = tool({
   inputSchema: z.object({
     id: z.number().describe("The tool call ID to retrieve"),
   }),
+  strict: true,
   execute: async ({ id }, { experimental_context }) => {
     const { agent } = experimental_context as AgentFSState;
     const toolCall = await agent.tools.get(id);

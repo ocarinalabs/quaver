@@ -1,13 +1,11 @@
 /**
- * Pino-based Logging System Types
+ * Logging System Types
  */
 
 import type pino from "pino";
 
-// Our preset aliases (map to Pino levels)
 export type LogPreset = "silent" | "minimal" | "normal" | "verbose" | "debug";
 
-// Structured log entry types (for Zod validation in analyzer)
 export type BenchmarkLogType =
   | "start"
   | "end"
@@ -15,16 +13,46 @@ export type BenchmarkLogType =
   | "tool"
   | "transition"
   | "state"
-  | "progress";
+  | "progress"
+  | "request"
+  | "output";
 
-// Logger configuration options
+export type FinishReason =
+  | "stop"
+  | "length"
+  | "tool-calls"
+  | "content-filter"
+  | "error"
+  | "other";
+
+export type StepType = "initial" | "continue" | "tool-result";
+
+export type ReasoningPart = {
+  type: "reasoning";
+  text: string;
+};
+
 export type LogConfig = {
   pretty: boolean;
   base: Record<string, unknown>;
 };
 
-// AI SDK step type (subset of what we need)
-// Matches the structure from AI SDK's onStepFinish callback
+// Matches AI SDK v6 Usage type
+export type Usage = {
+  inputTokens?: number;
+  outputTokens?: number;
+  inputTokenDetails?: {
+    noCacheTokens?: number;
+    cacheReadTokens?: number;
+    cacheWriteTokens?: number;
+  };
+  outputTokenDetails?: {
+    textTokens?: number;
+    reasoningTokens?: number;
+  };
+};
+
+// Matches AI SDK onStepFinish callback
 export type AgentStep = {
   text?: string;
   toolCalls?: Array<{
@@ -34,17 +62,31 @@ export type AgentStep = {
   toolResults?: Array<{
     output: unknown;
   }>;
+  usage?: Usage;
+  // Flight Recorder fields
+  reasoning?: ReasoningPart[];
+  reasoningText?: string;
+  finishReason?: FinishReason;
+  stepType?: StepType;
 };
 
-// Run metadata for start()
 export type RunMetadata = {
   benchmark: string;
   model: string;
 };
 
-// Our domain-specific logger interface
+export type EndData = {
+  finalScore?: number;
+  totalUsage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
+  };
+  generationId?: string;
+  gatewayCost?: number;
+};
+
 export type Logger = {
-  // Domain methods
   thinking: (text: string) => void;
   toolCall: (name: string, input: unknown, output: unknown) => void;
   state: (label: string, data: Record<string, unknown>) => void;
@@ -54,17 +96,11 @@ export type Logger = {
     metrics?: Record<string, number>
   ) => void;
   progress: (current: number, total: number, label?: string) => void;
-
-  // AI SDK integration
+  usage: (data: Usage) => void;
+  request: (prompt: string, systemPrompt?: string) => void;
   createStepHook: () => (step: AgentStep) => void;
-
-  // Lifecycle
   start: (metadata: RunMetadata) => void;
-  end: () => void;
-
-  // Access underlying Pino logger
+  end: (data?: EndData) => void;
   pino: pino.Logger;
-
-  // Child logger (inherits config + adds bindings)
   child: (bindings: Record<string, unknown>) => Logger;
 };

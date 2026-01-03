@@ -33,6 +33,7 @@ const helloTool = tool({
       .default(false)
       .describe("Add extra enthusiasm to the greeting"),
   }),
+  strict: true,
   execute: ({ name, enthusiastic }, { experimental_context }) => {
     const state = experimental_context as BaseState | undefined;
     const currentStep = state?.step ?? "unknown";

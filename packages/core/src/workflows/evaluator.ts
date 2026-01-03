@@ -10,7 +10,7 @@
  */
 
 import { gateway } from "@quaver/core/gateway";
-import { generateObject, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 /**
@@ -34,8 +34,9 @@ const runEvaluatorWorkflow = async (
   let iterations = 0;
 
   // Step 1: Initial generation
-  const { text: initialOutput } = await generateText({
+  const { output: initialOutput } = await generateText({
     model,
+    output: Output.text(),
     system: "[TODO]: Your generator system prompt",
     prompt: `Generate output for: ${input}`,
   });
@@ -45,16 +46,18 @@ const runEvaluatorWorkflow = async (
   // Evaluation-optimization loop
   while (iterations < maxIterations) {
     // Step 2: Evaluate current output
-    const { object: evaluation } = await generateObject({
+    const { output: evaluation } = await generateText({
       model,
-      schema: z.object({
-        qualityScore: z.number().min(1).max(10),
-        meetsRequirements: z.boolean(),
-        strengths: z.array(z.string()),
-        weaknesses: z.array(z.string()),
-        suggestions: z.array(z.string()),
-      }),
       system: "[TODO]: Your evaluator system prompt",
+      output: Output.object({
+        schema: z.object({
+          qualityScore: z.number().min(1).max(10),
+          meetsRequirements: z.boolean(),
+          strengths: z.array(z.string()),
+          weaknesses: z.array(z.string()),
+          suggestions: z.array(z.string()),
+        }),
+      }),
       prompt: `Evaluate this output:
 
       Input: ${input}
@@ -77,8 +80,9 @@ const runEvaluatorWorkflow = async (
     }
 
     // Step 4: Regenerate with feedback
-    const { text: improvedOutput } = await generateText({
+    const { output: improvedOutput } = await generateText({
       model,
+      output: Output.text(),
       system: "[TODO]: Your generator system prompt",
       prompt: `Improve this output based on feedback:
 
@@ -97,11 +101,13 @@ const runEvaluatorWorkflow = async (
   }
 
   // Final evaluation
-  const { object: finalEvaluation } = await generateObject({
+  const { output: finalEvaluation } = await generateText({
     model,
-    schema: z.object({
-      qualityScore: z.number().min(1).max(10),
-      meetsRequirements: z.boolean(),
+    output: Output.object({
+      schema: z.object({
+        qualityScore: z.number().min(1).max(10),
+        meetsRequirements: z.boolean(),
+      }),
     }),
     prompt: `Final evaluation of: ${currentOutput}`,
   });

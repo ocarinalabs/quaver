@@ -2,21 +2,25 @@
  * Benchmark Simulation Loop
  *
  * Agent acts → Simulation advances → Repeat until termination or max steps.
- *
- * [TODO]: Customize for your scenario
  */
 
+import type { GatewayProviderOptions } from "@ai-sdk/gateway";
 import { tools } from "@quaver/core/agent";
 import { SYSTEM_PROMPT } from "@quaver/core/agent/prompts";
 import { MAX_STEPS } from "@quaver/core/config/constants";
 import { createInitialState } from "@quaver/core/config/init";
 import type { YourBenchmarkState } from "@quaver/core/config/types";
+import { initSchema } from "@quaver/core/db/schema";
 import { calculateScore, isTerminated } from "@quaver/core/engine/scoring";
 import { advanceStep } from "@quaver/core/engine/step";
+import { createLogger } from "@quaver/core/logging/logger";
+import type { AgentStep, LogPreset } from "@quaver/core/logging/types";
 import type { StepLog } from "@quaver/core/types/results";
-import { Experimental_Agent as Agent, hasToolCall, stepCountIs } from "ai";
+import { fetchAllGenerationCosts } from "@quaver/core/utils/cost";
+import { hasToolCall, stepCountIs, ToolLoopAgent } from "ai";
 
 type BenchmarkResult = {
+  runId: string;
   finalStep: number;
   score: number;
   terminated: boolean;
@@ -28,60 +32,74 @@ type BenchmarkResult = {
   interrupted?: boolean;
 };
 
-/** Maximum tool calls per step */
-const MAX_TOOL_CALLS_PER_STEP = 100;
-
-/** Maximum messages before context trimming */
-const MAX_MESSAGES = 50;
-
-/** Messages to keep after trimming */
-const KEEP_MESSAGES = 40;
-
-type LogFn = (msg: string) => void;
-
-const logToolCall = (
-  log: LogFn,
-  toolName: string,
-  input: unknown,
-  output: unknown
-): void => {
-  log(`\n[Tool: ${toolName}]`);
-  log(`   Args: ${JSON.stringify(input ?? {}, null, 2)}`);
-
-  if (output === undefined) {
-    return;
-  }
-
-  const resultStr = JSON.stringify(output, null, 2);
-  const truncated = resultStr.length > 500;
-  log(`   Result: ${truncated ? `${resultStr.slice(0, 500)}...` : resultStr}`);
+/**
+ * Provider options for benchmark runs.
+ * Uses GatewayProviderOptions for typed gateway config.
+ * Other providers use Record<string, unknown> until their packages are installed.
+ */
+type BenchmarkProviderOptions = {
+  gateway?: GatewayProviderOptions;
+  google?: Record<string, unknown>;
+  anthropic?: Record<string, unknown>;
+  openai?: Record<string, unknown>;
 };
 
-/**
- * Run the benchmark simulation.
- *
- * @param modelId - Model to use
- * @param onStepComplete - Optional callback for progress updates
- * @param verbose - Enable verbose logging
- * @returns BenchmarkResult with final metrics
- */
+type BenchmarkOptions = {
+  onStepComplete?: (step: number, score: number) => void;
+  verbose?: boolean;
+  persist?: boolean;
+  logLevel?: LogPreset;
+  benchmark?: string;
+  providerOptions?: BenchmarkProviderOptions;
+};
+
+/** Default gateway options - zeroDataRetention for privacy */
+const DEFAULT_GATEWAY_OPTIONS: GatewayProviderOptions = {
+  zeroDataRetention: true,
+};
+
+const MAX_TOOL_CALLS_PER_STEP = 100;
+const MAX_MESSAGES = 50;
+const KEEP_MESSAGES = 40;
+
+type GatewayData = { cost?: string; generationId?: string };
+type ResponseWithGateway = {
+  body?: { providerMetadata?: { gateway?: GatewayData } };
+};
+
+const getGatewayData = (response: unknown): GatewayData =>
+  (response as ResponseWithGateway)?.body?.providerMetadata?.gateway ?? {};
+
 const runBenchmark = async (
   modelId = "openai/gpt-5.2",
-  onStepComplete?: (step: number, score: number) => void,
-  verbose = true
+  options?: BenchmarkOptions
 ): Promise<BenchmarkResult> => {
+  const startedAt = new Date();
   const state = createInitialState();
   const stepLog: StepLog[] = [];
+  const benchmarkName = options?.benchmark ?? "loop";
+  const runId = crypto.randomUUID();
 
-  const log: LogFn = (msg: string) => {
-    if (verbose) {
-      console.log(msg);
-    }
-  };
+  if (options?.persist) {
+    await initSchema();
+  }
 
-  const agent = new Agent({
+  const logger = createLogger(options?.logLevel ?? "normal", {
+    persist: options?.persist ?? false,
+    runId,
+    benchmark: benchmarkName,
     model: modelId,
-    system: SYSTEM_PROMPT,
+    pretty: options?.verbose ?? true,
+  });
+
+  logger.start({ benchmark: benchmarkName, model: modelId });
+
+  const generationIds: string[] = [];
+  const loggerStepHook = logger.createStepHook();
+
+  const agent = new ToolLoopAgent({
+    model: modelId,
+    instructions: SYSTEM_PROMPT,
     tools,
     experimental_context: state,
     stopWhen: [
@@ -100,39 +118,45 @@ const runBenchmark = async (
       return {};
     },
 
-    onStepFinish: (agentStep) => {
-      if (!verbose) {
-        return;
-      }
+    onStepFinish: (stepResult) => {
+      const step: AgentStep = {
+        text: stepResult.text,
+        toolCalls: stepResult.toolCalls?.map((tc) => ({
+          toolName: tc.toolName,
+          input: tc.input,
+        })),
+        toolResults: stepResult.toolResults?.map((tr) => ({
+          output: tr.output,
+        })),
+        usage: stepResult.usage,
+        reasoning: stepResult.reasoning,
+        reasoningText: stepResult.reasoningText,
+        finishReason: stepResult.finishReason,
+      };
+      loggerStepHook(step);
 
-      if (agentStep.text) {
-        log(`\n[Model says]:\n${agentStep.text}\n`);
-      }
-
-      if (!agentStep.toolCalls || agentStep.toolCalls.length === 0) {
-        return;
-      }
-
-      for (let i = 0; i < agentStep.toolCalls.length; i += 1) {
-        const tc = agentStep.toolCalls[i];
-        const tr = agentStep.toolResults?.[i];
-        if (tc) {
-          logToolCall(log, tc.toolName, tc.input, tr?.output);
-        }
+      const gateway = getGatewayData(stepResult.response);
+      if (gateway.generationId) {
+        generationIds.push(gateway.generationId);
       }
     },
   });
 
-  // Initial prompt
-  log(`\n${"=".repeat(50)}`);
-  log("STEP 1 - Starting simulation");
-  log("=".repeat(50));
+  // Merge default gateway options (zeroDataRetention) with user options
+  const mergedProviderOptions = {
+    ...options?.providerOptions,
+    gateway: {
+      ...DEFAULT_GATEWAY_OPTIONS,
+      ...options?.providerOptions?.gateway,
+    },
+  };
 
+  logger.request("Begin the simulation.", SYSTEM_PROMPT);
+  logger.progress(1, MAX_STEPS, "Starting simulation");
   await agent.generate({
-    prompt: "Begin the simulation.", // [TODO]: Customize initial prompt
+    prompt: "Begin the simulation.",
   });
 
-  // Main simulation loop
   while (!isTerminated(state) && state.step <= MAX_STEPS) {
     const report = advanceStep(state);
 
@@ -141,36 +165,46 @@ const runBenchmark = async (
       score: report.score,
     });
 
-    if (onStepComplete) {
-      onStepComplete(state.step, report.score);
+    if (options?.onStepComplete) {
+      options.onStepComplete(state.step, report.score);
     }
 
-    log(`\n${"=".repeat(50)}`);
-    log(`STEP ${state.step} - Score: ${report.score}`);
-    log("=".repeat(50));
+    logger.progress(state.step, MAX_STEPS);
 
     const stepSummary = formatStepSummary(report, state);
-    await agent.generate({ prompt: stepSummary });
+    logger.request(stepSummary);
+    await agent.generate({
+      prompt: stepSummary,
+    });
   }
 
+  const endedAt = new Date();
+  const elapsedSeconds = (endedAt.getTime() - startedAt.getTime()) / 1000;
+  const finalScore = calculateScore(state);
+
+  logger.progress(state.step, MAX_STEPS, "Fetching cost data from API...");
+  const costResult = await fetchAllGenerationCosts(generationIds);
+
+  logger.end({
+    finalScore,
+    gatewayCost: costResult.totalCost,
+  });
+
   return {
+    runId,
     finalStep: state.step,
-    score: calculateScore(state),
+    score: finalScore,
     terminated: isTerminated(state),
     stepLog,
     model: modelId,
-    startedAt: "",
-    endedAt: "",
-    elapsedSeconds: 0,
+    startedAt: startedAt.toISOString(),
+    endedAt: endedAt.toISOString(),
+    elapsedSeconds,
   };
 };
 
 type StepReport = ReturnType<typeof advanceStep>;
 
-/**
- * Format step summary for agent prompt.
- * [TODO]: Customize based on your simulation.
- */
 const formatStepSummary = (
   report: StepReport,
   state: YourBenchmarkState
@@ -191,4 +225,4 @@ const formatStepSummary = (
 };
 
 export { runBenchmark };
-export type { BenchmarkResult };
+export type { BenchmarkResult, BenchmarkOptions, BenchmarkProviderOptions };

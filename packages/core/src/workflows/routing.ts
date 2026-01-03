@@ -10,7 +10,7 @@
  */
 
 import { gateway } from "@quaver/core/gateway";
-import { generateObject, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 /**
@@ -27,13 +27,15 @@ const runRoutingWorkflow = async (input: string) => {
   const model = gateway("openai/gpt-5.2");
 
   // Step 1: Classify the input
-  const { object: classification } = await generateObject({
+  const { output: classification } = await generateText({
     model,
-    schema: z.object({
-      reasoning: z.string(),
-      type: z.enum(["type_a", "type_b", "type_c"]), // [TODO]: Your categories
-      complexity: z.enum(["simple", "complex"]),
-      confidence: z.number().min(0).max(1),
+    output: Output.object({
+      schema: z.object({
+        reasoningText: z.string(),
+        type: z.enum(["type_a", "type_b", "type_c"]), // [TODO]: Your categories
+        complexity: z.enum(["simple", "complex"]),
+        confidence: z.number().min(0).max(1),
+      }),
     }),
     prompt: `Classify this input:
     ${input}
@@ -69,8 +71,9 @@ const runRoutingWorkflow = async (input: string) => {
   }[classification.type];
 
   // Step 3: Execute with routed configuration
-  const { text: response } = await generateText({
+  const { output: response } = await generateText({
     model: gateway(routeConfig.model),
+    output: Output.text(),
     system: routeConfig.system,
     prompt: input,
   });

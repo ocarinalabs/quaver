@@ -23,7 +23,7 @@ export const MetricsSchema = z.object({
   outcome: z.number().min(0).max(1),
 });
 
-/** Full evaluation result */
+/** Full evaluation result (includes metadata added after agent runs) */
 export const EvaluationResultSchema = z.object({
   runId: z.string(),
   benchmark: z.string(),

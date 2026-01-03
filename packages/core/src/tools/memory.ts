@@ -17,6 +17,7 @@ const readScratchpadTool = tool({
   description:
     "Read your scratchpad notes. The scratchpad is free-form text storage for keeping track of plans, summaries, contacts, and other important information.",
   inputSchema: z.object({}),
+  strict: true,
   execute: (_, { experimental_context }) => {
     const state = experimental_context as BaseState;
     return {
@@ -41,6 +42,7 @@ const writeScratchpadTool = tool({
       .default(false)
       .describe("If true, append to existing content instead of overwriting"),
   }),
+  strict: true,
   execute: ({ content, append }, { experimental_context }) => {
     const state = experimental_context as BaseState;
 
@@ -67,6 +69,7 @@ const kvGetTool = tool({
   inputSchema: z.object({
     key: z.string().describe("The key to look up"),
   }),
+  strict: true,
   execute: ({ key }, { experimental_context }) => {
     const state = experimental_context as BaseState;
     const value = state.kvStore[key];
@@ -97,6 +100,7 @@ const kvSetTool = tool({
     key: z.string().describe("The key to store the value under"),
     value: z.string().describe("The value to store"),
   }),
+  strict: true,
   execute: ({ key, value }, { experimental_context }) => {
     const state = experimental_context as BaseState;
     const existed = key in state.kvStore;
@@ -119,6 +123,7 @@ const kvDeleteTool = tool({
   inputSchema: z.object({
     key: z.string().describe("The key to delete"),
   }),
+  strict: true,
   execute: ({ key }, { experimental_context }) => {
     const state = experimental_context as BaseState;
     const existed = key in state.kvStore;
@@ -141,6 +146,7 @@ const kvDeleteTool = tool({
 const kvListTool = tool({
   description: "List all keys currently stored in the key-value store.",
   inputSchema: z.object({}),
+  strict: true,
   execute: (_, { experimental_context }) => {
     const state = experimental_context as BaseState;
     const keys = Object.keys(state.kvStore);
@@ -152,6 +158,16 @@ const kvListTool = tool({
   },
 });
 
+/** All in-memory tools grouped for easy import */
+const memoryTools = {
+  readScratchpad: readScratchpadTool,
+  writeScratchpad: writeScratchpadTool,
+  kvGet: kvGetTool,
+  kvSet: kvSetTool,
+  kvDelete: kvDeleteTool,
+  kvList: kvListTool,
+};
+
 export {
   readScratchpadTool,
   writeScratchpadTool,
@@ -159,4 +175,5 @@ export {
   kvSetTool,
   kvDeleteTool,
   kvListTool,
+  memoryTools,
 };

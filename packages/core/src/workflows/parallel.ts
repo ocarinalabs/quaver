@@ -10,7 +10,7 @@
  */
 
 import { gateway } from "@quaver/core/gateway";
-import { generateObject, generateText } from "ai";
+import { generateText, Output } from "ai";
 import { z } from "zod";
 
 /**
@@ -29,51 +29,58 @@ const runParallelWorkflow = async (input: string) => {
   // Run parallel tasks
   const [result1, result2, result3] = await Promise.all([
     // Task 1: [TODO] Your first parallel task
-    generateObject({
+    generateText({
       model,
       system: "[TODO]: Specialist 1 system prompt",
-      schema: z.object({
-        findings: z.array(z.string()),
-        severity: z.enum(["low", "medium", "high"]),
-        recommendations: z.array(z.string()),
+      output: Output.object({
+        schema: z.object({
+          findings: z.array(z.string()),
+          severity: z.enum(["low", "medium", "high"]),
+          recommendations: z.array(z.string()),
+        }),
       }),
       prompt: `Analyze: ${input}`,
     }),
 
     // Task 2: [TODO] Your second parallel task
-    generateObject({
+    generateText({
       model,
       system: "[TODO]: Specialist 2 system prompt",
-      schema: z.object({
-        issues: z.array(z.string()),
-        impact: z.enum(["low", "medium", "high"]),
-        suggestions: z.array(z.string()),
+      output: Output.object({
+        schema: z.object({
+          issues: z.array(z.string()),
+          impact: z.enum(["low", "medium", "high"]),
+          suggestions: z.array(z.string()),
+        }),
       }),
       prompt: `Analyze: ${input}`,
     }),
 
     // Task 3: [TODO] Your third parallel task
-    generateObject({
+    generateText({
       model,
       system: "[TODO]: Specialist 3 system prompt",
-      schema: z.object({
-        concerns: z.array(z.string()),
-        score: z.number().min(1).max(10),
-        improvements: z.array(z.string()),
+      output: Output.object({
+        schema: z.object({
+          concerns: z.array(z.string()),
+          score: z.number().min(1).max(10),
+          improvements: z.array(z.string()),
+        }),
       }),
       prompt: `Analyze: ${input}`,
     }),
   ]);
 
   const results = [
-    { ...result1.object, type: "specialist1" },
-    { ...result2.object, type: "specialist2" },
-    { ...result3.object, type: "specialist3" },
+    { ...result1.output, type: "specialist1" },
+    { ...result2.output, type: "specialist2" },
+    { ...result3.output, type: "specialist3" },
   ];
 
   // Aggregate results
-  const { text: summary } = await generateText({
+  const { output: summary } = await generateText({
     model,
+    output: Output.text(),
     system: "You are synthesizing multiple specialist analyses.",
     prompt: `Synthesize these analyses into a concise summary:
     ${JSON.stringify(results, null, 2)}`,

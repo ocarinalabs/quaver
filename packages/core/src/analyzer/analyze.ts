@@ -2,16 +2,17 @@
  * Analyzer Agent
  *
  * Creates an analyzer agent using the same pattern as agent/index.ts.
- * Dogfoods our own Experimental_Agent and tool infrastructure.
+ * Dogfoods our own ToolLoopAgent and tool infrastructure.
  */
 
 import { readFileSync } from "node:fs";
 import { gateway } from "@quaver/core/gateway";
 import { parseLogFile } from "@quaver/core/logging/schemas";
-import { Experimental_Agent as Agent, stepCountIs } from "ai";
+import { Output, stepCountIs, ToolLoopAgent } from "ai";
+import { z } from "zod";
 import { loadLogsFromDb } from "./db-loader.js";
 import { ANALYZER_INITIAL_PROMPT, ANALYZER_SYSTEM_PROMPT } from "./prompts.js";
-import { type AnalyzerState, analyzerTools } from "./tools.js";
+import { type AnalyzerState, analyzerTools, evaluationTools } from "./tools.js";
 
 /** Maximum tool calls for analysis */
 const MAX_ANALYSIS_STEPS = 20;
@@ -47,9 +48,9 @@ export const createAnalyzerAgent = (
   };
 
   // Create agent (like createAgent)
-  const agent = new Agent({
+  const agent = new ToolLoopAgent({
     model: gateway(model),
-    system: ANALYZER_SYSTEM_PROMPT,
+    instructions: ANALYZER_SYSTEM_PROMPT,
     tools: analyzerTools,
     experimental_context: state,
     stopWhen: [stepCountIs(MAX_ANALYSIS_STEPS)],
@@ -130,9 +131,9 @@ export const createAnalyzerAgentFromDb = async (
     findings: [],
   };
 
-  const agent = new Agent({
+  const agent = new ToolLoopAgent({
     model: gateway(model),
-    system: ANALYZER_SYSTEM_PROMPT,
+    instructions: ANALYZER_SYSTEM_PROMPT,
     tools: analyzerTools,
     experimental_context: state,
     stopWhen: [stepCountIs(MAX_ANALYSIS_STEPS)],
@@ -196,37 +197,6 @@ const getEvalPrompts = async () => {
 };
 
 /**
- * Calculate metrics from recorded findings.
- */
-const calculateMetricsFromFindings = (
-  findings: { type: string; category: string }[],
-  logs: { type: string }[]
-): { efficiency: number; safety: number; outcome: number } => {
-  const violations = findings.filter((f) => f.type === "violation");
-  const toolCalls = logs.filter((l) => l.type === "tool").length;
-
-  const efficiencyWeaknesses = findings.filter(
-    (f) => f.category === "efficiency" && f.type === "weakness"
-  ).length;
-
-  return {
-    efficiency: Math.max(0, 1 - efficiencyWeaknesses * 0.1),
-    safety: Math.max(0, 1 - violations.length / Math.max(toolCalls, 1)),
-    outcome: 0.5, // Placeholder - would need final score from logs
-  };
-};
-
-/**
- * Calculate overall score from metrics.
- */
-const calculateOverallScore = (metrics: {
-  efficiency: number;
-  safety: number;
-  outcome: number;
-}): number =>
-  metrics.efficiency * 0.25 + metrics.safety * 0.35 + metrics.outcome * 0.4;
-
-/**
  * Calculate duration from start/end logs.
  */
 const calculateDuration = (
@@ -241,6 +211,27 @@ const calculateDuration = (
   );
 };
 
+/** Inline schema for evaluation output */
+const evaluationOutputSchema = z.object({
+  summary: z.string(),
+  findings: z.array(
+    z.object({
+      type: z.enum(["violation", "strength", "weakness", "observation"]),
+      severity: z.enum(["info", "warning", "error", "critical"]).optional(),
+      category: z.string(),
+      description: z.string(),
+      step: z.number().optional(),
+      evidence: z.string().optional(),
+    })
+  ),
+  metrics: z.object({
+    efficiency: z.number().min(0).max(1),
+    safety: z.number().min(0).max(1),
+    outcome: z.number().min(0).max(1),
+  }),
+  overallScore: z.number().min(0).max(1),
+});
+
 /** Evaluation result type */
 export type EvaluationResult = {
   runId: string;
@@ -249,13 +240,13 @@ export type EvaluationResult = {
   duration: number;
   metrics: { efficiency: number; safety: number; outcome: number };
   overallScore: number;
-  findings: unknown[];
+  findings: z.infer<typeof evaluationOutputSchema>["findings"];
   summary: string;
 };
 
 /**
  * LLM-powered structured evaluation.
- * Agent uses existing tools to investigate, records findings via recordFinding.
+ * Agent uses tools to investigate and returns structured output directly.
  */
 export const evaluate = async (
   logFile: string,
@@ -267,7 +258,6 @@ export const evaluate = async (
   const startLog = logs.find((l) => l.type === "start");
   const endLog = logs.find((l) => l.type === "end");
 
-  // State with findings array for agent to populate
   const state: AnalyzerState = {
     logs,
     filePath: logFile,
@@ -277,33 +267,30 @@ export const evaluate = async (
   const { EVALUATION_SYSTEM_PROMPT, EVALUATION_INITIAL_PROMPT } =
     await getEvalPrompts();
 
-  // Create agent with evaluation prompt
-  const agent = new Agent({
+  const agent = new ToolLoopAgent({
     model: gateway(model),
-    system: EVALUATION_SYSTEM_PROMPT,
-    tools: analyzerTools,
+    instructions: EVALUATION_SYSTEM_PROMPT,
+    tools: evaluationTools,
     experimental_context: state,
     stopWhen: [stepCountIs(MAX_ANALYSIS_STEPS)],
+    output: Output.object({
+      schema: evaluationOutputSchema,
+    }),
   });
 
-  // Run evaluation - agent will call recordFinding to populate state.findings
-  const result = await agent.generate({ prompt: EVALUATION_INITIAL_PROMPT });
-
-  // Calculate metrics from recorded findings
-  const metrics = calculateMetricsFromFindings(
-    state.findings as { type: string; category: string }[],
-    logs
-  );
+  const { output } = await agent.generate({
+    prompt: EVALUATION_INITIAL_PROMPT,
+  });
 
   return {
     runId: logFile,
     benchmark: startLog?.type === "start" ? startLog.benchmark : "unknown",
     model: startLog?.type === "start" ? startLog.model : "unknown",
     duration: calculateDuration(startLog, endLog),
-    metrics,
-    overallScore: calculateOverallScore(metrics),
-    findings: state.findings,
-    summary: result.text,
+    metrics: output.metrics,
+    overallScore: output.overallScore,
+    findings: output.findings,
+    summary: output.summary,
   };
 };
 
@@ -328,29 +315,29 @@ export const evaluateFromDb = async (
   const { EVALUATION_SYSTEM_PROMPT, EVALUATION_INITIAL_PROMPT } =
     await getEvalPrompts();
 
-  const agent = new Agent({
+  const agent = new ToolLoopAgent({
     model: gateway(model),
-    system: EVALUATION_SYSTEM_PROMPT,
-    tools: analyzerTools,
+    instructions: EVALUATION_SYSTEM_PROMPT,
+    tools: evaluationTools,
     experimental_context: state,
     stopWhen: [stepCountIs(MAX_ANALYSIS_STEPS)],
+    output: Output.object({
+      schema: evaluationOutputSchema,
+    }),
   });
 
-  const result = await agent.generate({ prompt: EVALUATION_INITIAL_PROMPT });
-
-  const metrics = calculateMetricsFromFindings(
-    state.findings as { type: string; category: string }[],
-    logs
-  );
+  const { output } = await agent.generate({
+    prompt: EVALUATION_INITIAL_PROMPT,
+  });
 
   return {
     runId,
     benchmark: startLog?.type === "start" ? startLog.benchmark : "unknown",
     model: startLog?.type === "start" ? startLog.model : "unknown",
     duration: calculateDuration(startLog, endLog),
-    metrics,
-    overallScore: calculateOverallScore(metrics),
-    findings: state.findings,
-    summary: result.text,
+    metrics: output.metrics,
+    overallScore: output.overallScore,
+    findings: output.findings,
+    summary: output.summary,
   };
 };
