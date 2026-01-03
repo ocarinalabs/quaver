@@ -143,7 +143,7 @@ const runBenchmark = async (
   });
 
   // Merge default gateway options (zeroDataRetention) with user options
-  const mergedProviderOptions = {
+  const _mergedProviderOptions = {
     ...options?.providerOptions,
     gateway: {
       ...DEFAULT_GATEWAY_OPTIONS,

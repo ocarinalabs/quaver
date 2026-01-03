@@ -4,7 +4,6 @@ import type {
   SDKCompactBoundaryMessage,
   SDKResultMessage,
   SDKSystemMessage,
-  SDKUserMessage,
 } from "@anthropic-ai/claude-agent-sdk";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { getCheckpointOptions } from "../config/checkpoint.js";
@@ -43,24 +42,12 @@ const buildQueryOptions = (options: GeneratorOptions) => ({
   ...getCheckpointOptions(options.enableCheckpoints ?? false),
 });
 
-async function* generateMessages(
-  description: string
-): AsyncGenerator<SDKUserMessage> {
-  yield {
-    type: "user" as const,
-    message: {
-      role: "user" as const,
-      content: buildPrompt(description),
-    },
-  };
-}
-
 const generateBenchmark = (
   description: string,
   options: GeneratorOptions = {}
 ): Query =>
   query({
-    prompt: generateMessages(description),
+    prompt: buildPrompt(description),
     options: buildQueryOptions(options),
   });
 
