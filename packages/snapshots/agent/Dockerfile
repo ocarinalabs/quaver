@@ -30,4 +30,4 @@ RUN if [ -n "$GITHUB_TOKEN" ]; then \
 
 WORKDIR /home/daytona/shell
 
-CMD ["bun", "server.ts"]
+ENTRYPOINT ["bun", "server.ts"]
