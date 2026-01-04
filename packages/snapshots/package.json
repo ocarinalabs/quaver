@@ -1,0 +1,15 @@
+{
+  "name": "@quaver/snapshots",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Daytona snapshot Dockerfiles for agent and core sandboxes",
+  "scripts": {
+    "build": "bun src/build.ts build",
+    "push": "bun src/build.ts push",
+    "deploy": "bun src/build.ts deploy",
+    "clean": "bun src/build.ts clean",
+    "list": "bun src/build.ts list",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
+  }
+}

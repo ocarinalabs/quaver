@@ -10,10 +10,8 @@ RUN bun add -g @anthropic-ai/claude-code typescript tsx ultracite
 
 WORKDIR /home/daytona
 
-# GitHub token for private repo access (pass via --build-arg)
 ARG GITHUB_TOKEN
 
-# Clone and build @quaver packages
 RUN if [ -n "$GITHUB_TOKEN" ]; then \
       git clone --depth 1 https://${GITHUB_TOKEN}@github.com/ocarinalabs/quaver.git /tmp/quaver; \
     else \
@@ -28,4 +26,6 @@ RUN if [ -n "$GITHUB_TOKEN" ]; then \
     && cp -r packages/agent /home/daytona/node_modules/@quaver/agent \
     && rm -rf /tmp/quaver
 
-CMD ["sleep", "infinity"]
+RUN echo '<!DOCTYPE html><html><head><title>Sandbox Ready</title><style>body{font-family:system-ui;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#0a0a0a;color:#fff}div{text-align:center}h1{font-size:2rem;margin-bottom:0.5rem}p{color:#888}</style></head><body><div><h1>Sandbox Ready</h1><p>@quaver/agent is available</p></div></body></html>' > /home/daytona/index.html
+
+CMD ["sh", "-c", "bunx serve -p 3000 & sleep infinity"]

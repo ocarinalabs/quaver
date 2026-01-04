@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="28" assertions="45" failures="0" skipped="0" time="21.630693">
+  <testsuite name="tests/build.test.ts" tests="28" assertions="45" failures="0" skipped="0" time="21.458" hostname="faws-Mac-mini.local">
+    <testcase name="defines agent snapshot with correct resources" classname="SNAPSHOTS config &amp;gt; build" time="0.000390209" file="tests/build.test.ts" assertions="1" />
+    <testcase name="defines core snapshot with correct resources" classname="SNAPSHOTS config &amp;gt; build" time="0" file="tests/build.test.ts" assertions="1" />
+    <testcase name="has exactly two snapshots" classname="SNAPSHOTS config &amp;gt; build" time="0" file="tests/build.test.ts" assertions="3" />
+    <testcase name="points to package root (parent of src/)" classname="DOCKERFILES_DIR &amp;gt; build" time="0.00024275" file="tests/build.test.ts" assertions="1" />
+    <testcase name="agent Dockerfile exists" classname="DOCKERFILES_DIR &amp;gt; build" time="0.000020042000000000002" file="tests/build.test.ts" assertions="1" />
+    <testcase name="core Dockerfile exists" classname="DOCKERFILES_DIR &amp;gt; build" time="0.000007875" file="tests/build.test.ts" assertions="1" />
+    <testcase name="parses command with no targets (defaults to all)" classname="parseArgs &amp;gt; build" time="0.000033" file="tests/build.test.ts" assertions="2" />
+    <testcase name="parses command with single target" classname="parseArgs &amp;gt; build" time="0.000007708" file="tests/build.test.ts" assertions="2" />
+    <testcase name="parses command with multiple targets" classname="parseArgs &amp;gt; build" time="0.000007042" file="tests/build.test.ts" assertions="2" />
+    <testcase name="returns undefined command for empty args" classname="parseArgs &amp;gt; build" time="0.00017720800000000002" file="tests/build.test.ts" assertions="2" />
+    <testcase name="handles deploy command" classname="parseArgs &amp;gt; build" time="0.000006375" file="tests/build.test.ts" assertions="1" />
+    <testcase name="handles clean command" classname="parseArgs &amp;gt; build" time="0.0000061669999999999996" file="tests/build.test.ts" assertions="2" />
+    <testcase name="handles list command" classname="parseArgs &amp;gt; build" time="0" file="tests/build.test.ts" assertions="1" />
+    <testcase name="prints usage without throwing" classname="printUsage &amp;gt; build" time="0.0005669999999999999" file="tests/build.test.ts" assertions="1" />
+    <testcase name="agent Dockerfile contains required tools" classname="Dockerfile content validation &amp;gt; build" time="0.000664042" file="tests/build.test.ts" assertions="5" />
+    <testcase name="core Dockerfile is lighter (no claude-code)" classname="Dockerfile content validation &amp;gt; build" time="0.000041125000000000004" file="tests/build.test.ts" assertions="4" />
+    <testcase name="generates correct Docker tags" classname="snapshot naming conventions &amp;gt; build" time="0.00001825" file="tests/build.test.ts" assertions="2" />
+    <testcase name="generates correct Daytona snapshot names" classname="snapshot naming conventions &amp;gt; build" time="0.00001675" file="tests/build.test.ts" assertions="2" />
+    <testcase name="build() creates Docker image for core" classname="Docker integration &amp;gt; build" time="2.0844794579999997" file="tests/build.test.ts" assertions="1" />
+    <testcase name="clean() removes Docker image" classname="Docker integration &amp;gt; build" time="0.941833042" file="tests/build.test.ts" assertions="1" />
+    <testcase name="Docker is running" classname="Docker integration &amp;gt; build" time="0.28956183399999996" file="tests/build.test.ts" assertions="1" />
+    <testcase name="Daytona CLI is available" classname="Daytona integration &amp;gt; build" time="0.020092707999999997" file="tests/build.test.ts" assertions="1" />
+    <testcase name="can list snapshots" classname="Daytona integration &amp;gt; build" time="0.6757927499999999" file="tests/build.test.ts" assertions="1" />
+    <testcase name="list() shows Daytona snapshots" classname="Daytona integration &amp;gt; build" time="1.2364996670000001" file="tests/build.test.ts" assertions="1" />
+    <testcase name="push() pushes core snapshot to Daytona" classname="Daytona integration &amp;gt; build" time="15.028029708" file="tests/build.test.ts" assertions="1" />
+    <testcase name="CLI: bun src/build.ts build core" classname="main() CLI &amp;gt; build" time="1.1421976669999998" file="tests/build.test.ts" assertions="1" />
+    <testcase name="CLI: bun src/build.ts clean core" classname="main() CLI &amp;gt; build" time="0.030290542" file="tests/build.test.ts" assertions="1" />
+    <testcase name="CLI: bun src/build.ts (no args shows usage)" classname="main() CLI &amp;gt; build" time="0.013084" file="tests/build.test.ts" assertions="2" />
+  </testsuite>
+</testsuites>

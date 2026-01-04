@@ -1,0 +1,47 @@
+{
+  "name": "@quaver/sandbox",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
+  },
+  "exports": {
+    "./sandbox": {
+      "types": "./src/sandbox/index.ts",
+      "default": "./dist/sandbox/index.js"
+    },
+    "./sandbox/pty": {
+      "types": "./src/sandbox/pty.ts",
+      "default": "./dist/sandbox/pty.js"
+    },
+    "./snapshot": {
+      "types": "./src/snapshot/index.ts",
+      "default": "./dist/snapshot/index.js"
+    },
+    "./volume": {
+      "types": "./src/volume/index.ts",
+      "default": "./dist/volume/index.js"
+    },
+    "./client": {
+      "types": "./src/client.ts",
+      "default": "./dist/client.js"
+    },
+    "./api": {
+      "types": "./src/api.ts",
+      "default": "./dist/api.js"
+    }
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@daytonaio/sdk": "^0.128.1"
+  }
+}

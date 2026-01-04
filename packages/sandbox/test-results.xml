@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="12" assertions="16" failures="0" skipped="0" time="15.699081">
+  <testsuite name="tests/sandbox.test.ts" tests="7" assertions="7" failures="0" skipped="0" time="8.945" hostname="faws-Mac-mini.local">
+    <testcase name="createSandbox creates a sandbox from snapshot" classname="sandbox" time="3.1679603750000003" file="tests/sandbox.test.ts" assertions="2" />
+    <testcase name="getSandbox retrieves sandbox by id" classname="sandbox" time="0.2540205" file="tests/sandbox.test.ts" assertions="1" />
+    <testcase name="findSandbox finds sandbox by id or name" classname="sandbox" time="0.264595167" file="tests/sandbox.test.ts" assertions="1" />
+    <testcase name="stopSandbox stops a running sandbox" classname="sandbox" time="1.779333791" file="tests/sandbox.test.ts" assertions="1" />
+    <testcase name="startSandbox starts a stopped sandbox" classname="sandbox" time="1.1125166670000002" file="tests/sandbox.test.ts" assertions="1" />
+    <testcase name="archiveSandbox initiates archive" classname="sandbox" time="1.869479416" file="tests/sandbox.test.ts" assertions="1" />
+    <testcase name="deleteSandbox deletes a sandbox" classname="sandbox" time="0.500484458" file="tests/sandbox.test.ts" assertions="0" />
+  </testsuite>
+  <testsuite name="tests/volume.test.ts" tests="3" assertions="4" failures="0" skipped="0" time="6.527" hostname="faws-Mac-mini.local">
+    <testcase name="getVolume creates a new volume" classname="volume" time="0.597287" file="tests/volume.test.ts" assertions="2" />
+    <testcase name="getVolume retrieves existing volume" classname="volume" time="0.26174758400000003" file="tests/volume.test.ts" assertions="1" />
+    <testcase name="deleteVolume deletes a volume" classname="volume" time="5.669267458999999" file="tests/volume.test.ts" assertions="1" />
+  </testsuite>
+  <testsuite name="tests/snapshot.test.ts" tests="1" assertions="1" failures="0" skipped="0" time="0" hostname="faws-Mac-mini.local">
+    <testcase name="createSnapshot is exported" classname="snapshot" time="0" file="tests/snapshot.test.ts" assertions="1" />
+  </testsuite>
+  <testsuite name="tests/client.test.ts" tests="1" assertions="4" failures="0" skipped="0" time="0" hostname="faws-Mac-mini.local">
+    <testcase name="createClient returns a Daytona instance" classname="client" time="0.000111625" file="tests/client.test.ts" assertions="4" />
+  </testsuite>
+</testsuites>
