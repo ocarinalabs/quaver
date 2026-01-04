@@ -1,7 +1,31 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
-  "extends": ["ultracite/core"],
+  "extends": [
+    "ultracite/biome/core",
+    "ultracite/biome/react",
+    "ultracite/biome/next"
+  ],
   "files": {
-    "includes": ["**", "!packages/rideshare-bench", "!packages/vending-bench"]
+    "includes": [
+      "!packages/rideshare-bench",
+      "!packages/vending-bench",
+      "!**/convex/_generated",
+      "!examples",
+      "!packages/ui/src/components/shadcn",
+      "!packages/ui/src/components/ai-elements",
+      "!**/hooks/use-mobile.ts"
+    ]
+  },
+  "linter": {
+    "rules": {
+      "style": {
+        "useConsistentTypeDefinitions": {
+          "level": "error",
+          "options": {
+            "style": "type"
+          }
+        }
+      }
+    }
   }
 }
