@@ -34,7 +34,12 @@ export const push = async (name: SnapshotName): Promise<void> => {
   const tag = `quaver-${name}:v1`;
   const snapshotName = `quaver-${name}`;
   const { cpu, memory, disk } = SNAPSHOTS[name];
-  console.log(`\nPushing ${snapshotName}...`);
+
+  // Delete existing snapshot first (ignore errors if it doesn't exist)
+  console.log(`\nDeleting existing ${snapshotName}...`);
+  await $`daytona snapshot delete ${snapshotName} -y`.quiet().nothrow();
+
+  console.log(`Pushing ${snapshotName}...`);
   await $`daytona snapshot push ${tag} --name ${snapshotName} --cpu ${cpu} --memory ${memory} --disk ${disk}`.quiet();
   console.log(`Pushed ${snapshotName}`);
 };

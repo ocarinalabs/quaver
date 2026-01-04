@@ -1,0 +1,13 @@
+{
+  "name": "@quaver/shell",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "bun --hot server.ts",
+    "start": "bun server.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}

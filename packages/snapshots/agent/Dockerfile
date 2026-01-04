@@ -24,8 +24,10 @@ RUN if [ -n "$GITHUB_TOKEN" ]; then \
     && mkdir -p /home/daytona/node_modules/@quaver \
     && cp -r packages/core /home/daytona/node_modules/@quaver/core \
     && cp -r packages/agent /home/daytona/node_modules/@quaver/agent \
+    && mkdir -p /home/daytona/shell \
+    && cp -r apps/shell/* /home/daytona/shell/ \
     && rm -rf /tmp/quaver
 
-RUN echo '<!DOCTYPE html><html><head><title>Sandbox Ready</title><style>body{font-family:system-ui;display:flex;justify-content:center;align-items:center;height:100vh;margin:0;background:#0a0a0a;color:#fff}div{text-align:center}h1{font-size:2rem;margin-bottom:0.5rem}p{color:#888}</style></head><body><div><h1>Sandbox Ready</h1><p>@quaver/agent is available</p></div></body></html>' > /home/daytona/index.html
+WORKDIR /home/daytona/shell
 
-CMD ["sh", "-c", "bunx serve -p 3000 & sleep infinity"]
+CMD ["bun", "server.ts"]
