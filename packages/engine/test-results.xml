@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="bun test" tests="5" assertions="5" failures="0" skipped="0" time="0.211661">
+  <testsuite name="tests/run.test.ts" tests="5" assertions="5" failures="0" skipped="0" time="0.001" hostname="faws-Mac-mini.local">
+    <testcase name="returns string with run- prefix" classname="generateRunId" time="0.00127075" file="tests/run.test.ts" assertions="1" />
+    <testcase name="generates unique IDs" classname="generateRunId" time="0" file="tests/run.test.ts" assertions="1" />
+    <testcase name="returns non-empty string" classname="getAgentRunnerScript" time="0.000688458" file="tests/run.test.ts" assertions="1" />
+    <testcase name="contains expected code" classname="getAgentRunnerScript" time="0.000228917" file="tests/run.test.ts" assertions="1" />
+    <testcase name="is exported" classname="runBenchmark" time="0" file="tests/run.test.ts" assertions="1" />
+  </testsuite>
+</testsuites>

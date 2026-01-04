@@ -1,0 +1,33 @@
+{
+  "name": "@quaver/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "check-types": "tsc --noEmit",
+    "start": "bun src/cli.ts",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
+  },
+  "exports": {
+    "./run": {
+      "types": "./src/run.ts",
+      "default": "./dist/run.js"
+    },
+    "./types": {
+      "types": "./src/types.ts",
+      "default": "./dist/types.js"
+    }
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@quaver/sandbox": "workspace:*",
+    "@daytonaio/sdk": "^0.128.1"
+  }
+}
