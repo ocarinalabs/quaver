@@ -28,6 +28,7 @@ if (isInteractive) {
           role: "user" as const,
           content: line,
         },
+        parent_tool_use_id: null,
       };
     }
   }
