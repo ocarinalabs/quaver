@@ -6,7 +6,7 @@
  * [TODO]: Customize the prompt for your scenario
  */
 
-import { INITIAL_SCORE, STEP_COST } from "@quaver/core/config/constants";
+import { INITIAL_SCORE, STEP_COST } from "./config/constants.js";
 
 /**
  * Main agent system prompt.

@@ -16,6 +16,6 @@ export const STEP_COST = 2;
 export const FAILURE_THRESHOLD = 10;
 
 /** Maximum simulation steps */
-export const MAX_STEPS = 7;
+export const MAX_STEPS = 365;
 
 // [TODO]: Add your scenario-specific constants

@@ -13,10 +13,6 @@
       "types": "./src/agent/index.ts",
       "default": "./dist/agent/index.js"
     },
-    "./agent/prompts": {
-      "types": "./src/agent/prompts.ts",
-      "default": "./dist/agent/prompts.js"
-    },
     "./analyzer/analyze": {
       "types": "./src/analyzer/analyze.ts",
       "default": "./dist/analyzer/analyze.js"
@@ -29,18 +25,6 @@
       "types": "./src/analyzer/tools.ts",
       "default": "./dist/analyzer/tools.js"
     },
-    "./config/constants": {
-      "types": "./src/config/constants.ts",
-      "default": "./dist/config/constants.js"
-    },
-    "./config/init": {
-      "types": "./src/config/init.ts",
-      "default": "./dist/config/init.js"
-    },
-    "./config/types": {
-      "types": "./src/config/types.ts",
-      "default": "./dist/config/types.js"
-    },
     "./db/client": {
       "types": "./src/db/client.ts",
       "default": "./dist/db/client.js"
@@ -52,14 +36,6 @@
     "./db/schema": {
       "types": "./src/db/schema.ts",
       "default": "./dist/db/schema.js"
-    },
-    "./engine/scoring": {
-      "types": "./src/engine/scoring.ts",
-      "default": "./dist/engine/scoring.js"
-    },
-    "./engine/step": {
-      "types": "./src/engine/step.ts",
-      "default": "./dist/engine/step.js"
     },
     "./gateway": {
       "types": "./src/gateway.ts",
@@ -93,10 +69,6 @@
       "types": "./src/tools/score.ts",
       "default": "./dist/tools/score.js"
     },
-    "./tools/template": {
-      "types": "./src/tools/template.ts",
-      "default": "./dist/tools/template.js"
-    },
     "./tools/time": {
       "types": "./src/tools/time.ts",
       "default": "./dist/tools/time.js"
@@ -120,30 +92,6 @@
     "./utils/results": {
       "types": "./src/utils/results.ts",
       "default": "./dist/utils/results.js"
-    },
-    "./workflows/evaluator": {
-      "types": "./src/workflows/evaluator.ts",
-      "default": "./dist/workflows/evaluator.js"
-    },
-    "./workflows/loop": {
-      "types": "./src/workflows/loop.ts",
-      "default": "./dist/workflows/loop.js"
-    },
-    "./workflows/orchestrator": {
-      "types": "./src/workflows/orchestrator.ts",
-      "default": "./dist/workflows/orchestrator.js"
-    },
-    "./workflows/parallel": {
-      "types": "./src/workflows/parallel.ts",
-      "default": "./dist/workflows/parallel.js"
-    },
-    "./workflows/routing": {
-      "types": "./src/workflows/routing.ts",
-      "default": "./dist/workflows/routing.js"
-    },
-    "./workflows/sequential": {
-      "types": "./src/workflows/sequential.ts",
-      "default": "./dist/workflows/sequential.js"
     }
   },
   "devDependencies": {

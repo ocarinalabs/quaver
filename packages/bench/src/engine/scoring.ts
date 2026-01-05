@@ -6,8 +6,8 @@
  * [TODO]: Customize scoring based on your scenario
  */
 
-import { FAILURE_THRESHOLD } from "@quaver/core/config/constants";
-import type { YourBenchmarkState } from "@quaver/core/config/types";
+import { FAILURE_THRESHOLD } from "../config/constants.js";
+import type { YourBenchmarkState } from "../config/types.js";
 
 /**
  * Check if simulation should terminate.

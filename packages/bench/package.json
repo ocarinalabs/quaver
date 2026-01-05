@@ -1,0 +1,61 @@
+{
+  "name": "@quaver/bench",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Benchmark boilerplate - copy and customize to create new benchmarks",
+  "scripts": {
+    "build": "tsc",
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "check-types": "tsc --noEmit"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./agent": {
+      "types": "./src/agent.ts",
+      "default": "./dist/agent.js"
+    },
+    "./prompts": {
+      "types": "./src/prompts.ts",
+      "default": "./dist/prompts.js"
+    },
+    "./config/constants": {
+      "types": "./src/config/constants.ts",
+      "default": "./dist/config/constants.js"
+    },
+    "./config/types": {
+      "types": "./src/config/types.ts",
+      "default": "./dist/config/types.js"
+    },
+    "./config/init": {
+      "types": "./src/config/init.ts",
+      "default": "./dist/config/init.js"
+    },
+    "./engine/step": {
+      "types": "./src/engine/step.ts",
+      "default": "./dist/engine/step.js"
+    },
+    "./engine/scoring": {
+      "types": "./src/engine/scoring.ts",
+      "default": "./dist/engine/scoring.js"
+    },
+    "./tools/custom": {
+      "types": "./src/tools/custom.ts",
+      "default": "./dist/tools/custom.js"
+    }
+  },
+  "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
+    "@types/bun": "latest",
+    "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "@quaver/core": "workspace:*",
+    "ai": "^6.0.1",
+    "zod": "^4.1.13"
+  }
+}

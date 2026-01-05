@@ -5,7 +5,6 @@
  * Supports both in-memory tools (default) and AgentFS (persistent storage).
  */
 
-import { createInitialState } from "@quaver/core/config/init";
 import { createLogger } from "@quaver/core/logging/logger";
 import type { LogPreset } from "@quaver/core/logging/types";
 import { agentfsTools } from "@quaver/core/tools/agentfs";
@@ -13,42 +12,69 @@ import { helloTool } from "@quaver/core/tools/hello";
 import { memoryTools } from "@quaver/core/tools/memory";
 import { adjustScoreTool, getScoreTool } from "@quaver/core/tools/score";
 import { waitForNextStepTool } from "@quaver/core/tools/time";
+import type { BaseState } from "@quaver/core/types/state";
 import { AgentFS } from "agentfs-sdk";
+import type { Tool } from "ai";
 import { hasToolCall, stepCountIs, ToolLoopAgent } from "ai";
-import { SYSTEM_PROMPT } from "./prompts.js";
 
 const MAX_MESSAGES = 50;
 const KEEP_MESSAGES = 40;
 const MAX_TOOL_CALLS_PER_STEP = 100;
 
 /**
- * Create a new agent with fresh state and automatic logging.
- *
- * @param model - Model ID to use
- * @param logLevel - Log verbosity (default: "normal")
- * @param options - Agent options (useAgentFS, agentId)
- * @returns Agent instance, state, and logger
- *
- * @example
- * // Default: in-memory tools (safe, no external deps)
- * const { agent } = await createAgent("google/gemini-3-flash");
- *
- * @example
- * // With AgentFS persistent storage
- * const { agent } = await createAgent("google/gemini-3-flash", "normal", {
- *   useAgentFS: true,
- *   agentId: "my-benchmark"
- * });
+ * Options for creating an agent.
  */
-const createAgent = async (
-  model = "openai/gpt-5.2",
-  logLevel: LogPreset = "normal",
-  options: { useAgentFS?: boolean; agentId?: string } = {}
-) => {
-  const { useAgentFS = false, agentId } = options;
-  const state = createInitialState();
-  const logger = createLogger(logLevel);
+type CreateAgentOptions = {
+  /** Model ID to use (e.g., "anthropic/claude-sonnet-4.5") */
+  model: string;
+  /** System prompt for the agent */
+  system: string;
+  /** Initial state (must extend BaseState) */
+  state: BaseState;
+  /** Additional tools to include */
+  tools?: Record<string, Tool>;
+  /** Log verbosity (default: "normal") */
+  logLevel?: LogPreset;
+  /** Use AgentFS for persistent storage */
+  useAgentFS?: boolean;
+  /** Agent ID for AgentFS */
+  agentId?: string;
+};
 
+/**
+ * Create a new agent with the provided configuration.
+ *
+ * @param options - Agent configuration options
+ * @returns Agent instance and logger
+ *
+ * @example
+ * ```typescript
+ * import { createAgent } from "@quaver/core/agent";
+ * import { SYSTEM_PROMPT } from "./prompts";
+ * import { createInitialState } from "./config/init";
+ * import { customTools } from "./tools/custom";
+ *
+ * const state = createInitialState();
+ * const { agent, logger } = await createAgent({
+ *   model: "anthropic/claude-sonnet-4.5",
+ *   system: SYSTEM_PROMPT,
+ *   state,
+ *   tools: customTools,
+ * });
+ * ```
+ */
+const createAgent = async (options: CreateAgentOptions) => {
+  const {
+    model,
+    system,
+    state,
+    tools: customTools = {},
+    logLevel = "normal",
+    useAgentFS = false,
+    agentId,
+  } = options;
+
+  const logger = createLogger(logLevel);
   const storageTools = useAgentFS ? agentfsTools : memoryTools;
 
   if (useAgentFS) {
@@ -58,16 +84,19 @@ const createAgent = async (
   }
 
   const tools = {
+    // Core framework tools
     getScore: getScoreTool,
     adjustScore: adjustScoreTool,
     waitForNextStep: waitForNextStepTool,
     ...storageTools,
     hello: helloTool,
+    // Custom tools from the benchmark
+    ...customTools,
   };
 
   const agent = new ToolLoopAgent({
     model,
-    instructions: SYSTEM_PROMPT,
+    instructions: system,
     tools,
     experimental_context: state,
     stopWhen: [
@@ -89,10 +118,11 @@ const createAgent = async (
     onStepFinish: logger.createStepHook(),
   });
 
-  return { agent, state, logger };
+  return { agent, logger };
 };
 
-const tools = {
+/** Default framework tools (for reference) */
+const frameworkTools = {
   getScore: getScoreTool,
   adjustScore: adjustScoreTool,
   waitForNextStep: waitForNextStepTool,
@@ -100,4 +130,5 @@ const tools = {
   hello: helloTool,
 };
 
-export { createAgent, tools };
+export { createAgent, frameworkTools };
+export type { CreateAgentOptions };

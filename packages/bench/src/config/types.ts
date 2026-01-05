@@ -17,8 +17,9 @@ export type { Event } from "@quaver/core/types/state";
  * @example
  * ```typescript
  * interface MyBenchmarkState extends BaseState {
- *   items: Item[];
- *   metrics: Metrics;
+ *   balance: number;
+ *   inventory: Item[];
+ *   day: number;
  * }
  * ```
  */

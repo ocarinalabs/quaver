@@ -1,7 +1,7 @@
 /**
- * Tool Creation Template
+ * Custom Tools
  *
- * Copy this file to create scenario-specific tools for your benchmark.
+ * Scenario-specific tools for your benchmark.
  *
  * [TODO]: Rename this file (e.g., inventory.ts, tasks.ts)
  * [TODO]: Replace placeholder tools with your scenario tools
@@ -15,9 +15,9 @@
  * 6. Return structured result
  */
 
-import type { YourBenchmarkState } from "@quaver/core/config/types";
 import { tool } from "ai";
 import { z } from "zod";
+import type { YourBenchmarkState } from "../config/types.js";
 
 // ============================================================================
 // TOOL 1: Read-only tool (queries state)
@@ -31,7 +31,7 @@ import { z } from "zod";
 const getYourDataTool = tool({
   description:
     "[TODO]: Describe what this tool does. Be specific about what it returns.",
-  inputSchema: z.object({
+  parameters: z.object({
     filter: z.string().optional().describe("Optional filter to apply"),
     limit: z
       .number()
@@ -39,7 +39,6 @@ const getYourDataTool = tool({
       .default(10)
       .describe("Maximum items to return"),
   }),
-  strict: true,
   execute: ({ filter: _filter, limit: _limit }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -68,11 +67,10 @@ const getYourDataTool = tool({
  */
 const doYourActionTool = tool({
   description: "[TODO]: Describe the action. Note if it's irreversible.",
-  inputSchema: z.object({
+  parameters: z.object({
     itemId: z.string().describe("ID of the item to act on"),
     amount: z.number().positive().describe("Amount for the action"),
   }),
-  strict: true,
   execute: ({ itemId, amount: _amount }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -98,14 +96,15 @@ const doYourActionTool = tool({
  */
 const fetchExternalDataTool = tool({
   description: "[TODO]: Describe the external operation.",
-  inputSchema: z.object({
+  parameters: z.object({
     query: z.string().describe("Query to send to external service"),
   }),
-  strict: true,
-  execute: ({ query }, { experimental_context }) => {
+  execute: async ({ query }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
     // [TODO]: Implement your async logic
+    // Example: await fetch("https://api.example.com/data")
+    await Promise.resolve(); // Placeholder for async operation
 
     return {
       success: true,
@@ -114,5 +113,12 @@ const fetchExternalDataTool = tool({
     };
   },
 });
+
+/** Export all custom tools */
+export const customTools = {
+  getYourData: getYourDataTool,
+  doYourAction: doYourActionTool,
+  fetchExternalData: fetchExternalDataTool,
+};
 
 export { doYourActionTool, fetchExternalDataTool, getYourDataTool };

@@ -6,10 +6,10 @@
  * [TODO]: Implement your step transition logic
  */
 
-import { STEP_COST } from "@quaver/core/config/constants";
-import type { YourBenchmarkState } from "@quaver/core/config/types";
 import type { StepCostResult } from "@quaver/core/utils/fees";
 import { applyStepCost } from "@quaver/core/utils/fees";
+import { STEP_COST } from "../config/constants.js";
+import type { YourBenchmarkState } from "../config/types.js";
 import { calculateScore } from "./scoring.js";
 
 /** Report generated after each step transition */
