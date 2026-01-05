@@ -31,7 +31,7 @@ import type { YourBenchmarkState } from "../config/types.js";
 const getYourDataTool = tool({
   description:
     "[TODO]: Describe what this tool does. Be specific about what it returns.",
-  parameters: z.object({
+  inputSchema: z.object({
     filter: z.string().optional().describe("Optional filter to apply"),
     limit: z
       .number()
@@ -39,6 +39,7 @@ const getYourDataTool = tool({
       .default(10)
       .describe("Maximum items to return"),
   }),
+  strict: true,
   execute: ({ filter: _filter, limit: _limit }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -67,10 +68,11 @@ const getYourDataTool = tool({
  */
 const doYourActionTool = tool({
   description: "[TODO]: Describe the action. Note if it's irreversible.",
-  parameters: z.object({
+  inputSchema: z.object({
     itemId: z.string().describe("ID of the item to act on"),
     amount: z.number().positive().describe("Amount for the action"),
   }),
+  strict: true,
   execute: ({ itemId, amount: _amount }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
@@ -96,9 +98,10 @@ const doYourActionTool = tool({
  */
 const fetchExternalDataTool = tool({
   description: "[TODO]: Describe the external operation.",
-  parameters: z.object({
+  inputSchema: z.object({
     query: z.string().describe("Query to send to external service"),
   }),
+  strict: true,
   execute: async ({ query }, { experimental_context }) => {
     const _state = experimental_context as YourBenchmarkState;
 
