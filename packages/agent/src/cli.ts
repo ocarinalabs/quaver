@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { createInterface } from "node:readline";
+import type { SDKUserMessage } from "@anthropic-ai/claude-agent-sdk";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import {
   generateBenchmark,
@@ -18,18 +19,19 @@ import {
 const isInteractive = process.argv.includes("--interactive");
 
 if (isInteractive) {
-  async function* generateMessages() {
+  async function* generateMessages(): AsyncGenerator<SDKUserMessage> {
     const rl = createInterface({ input: process.stdin });
 
     for await (const line of rl) {
       yield {
-        type: "user" as const,
+        type: "user",
         message: {
-          role: "user" as const,
+          role: "user",
           content: line,
         },
         parent_tool_use_id: null,
-      };
+        session_id: "",
+      } as SDKUserMessage;
     }
   }
 
