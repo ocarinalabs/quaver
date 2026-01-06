@@ -1,0 +1,5 @@
+{
+  "extends": "@quaver/typescript-config/convex.json",
+  "include": ["convex/**/*"],
+  "exclude": ["convex/_generated"]
+}

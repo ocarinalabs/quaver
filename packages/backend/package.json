@@ -1,0 +1,21 @@
+{
+  "name": "@quaver/backend",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "setup": "convex dev --until-success",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@convex-dev/stripe": "^0.1.2",
+    "convex": "^1.31.2",
+    "svix": "^1.84.1"
+  },
+  "devDependencies": {
+    "@quaver/sandbox": "workspace:*",
+    "@quaver/typescript-config": "workspace:*",
+    "typescript": "^5.9.2"
+  }
+}
