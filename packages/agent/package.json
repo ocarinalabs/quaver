@@ -30,7 +30,7 @@
     }
   },
   "bin": {
-    "quaver-agent": "./dist/cli.js"
+    "quaver": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
