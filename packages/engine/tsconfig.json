@@ -1,11 +1,8 @@
 {
-  "extends": "@quaver/typescript-config/base.json",
+  "extends": "@quaver/typescript-config/library.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "strictNullChecks": true,
-    "module": "ESNext",
-    "moduleResolution": "bundler",
     "baseUrl": ".",
     "paths": {
       "@quaver/engine": ["./src/index.ts"],
