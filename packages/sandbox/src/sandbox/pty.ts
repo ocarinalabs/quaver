@@ -23,16 +23,16 @@ export const runAgentViaPty = async (
   sandbox: Sandbox,
   prompt: string,
   apiKey: string,
-  onData: (text: string) => void
+  onData?: (text: string) => void
 ) => {
   const ptyHandle = await createPty(sandbox, {
     id: "quaver-agent",
-    onData: (data) => onData(new TextDecoder().decode(data)),
+    onData: (data) => onData?.(new TextDecoder().decode(data)),
   });
 
-  // Run agent with API key (following guide-3 pattern)
+  // Run agent with API key
   ptyHandle.sendInput(
-    `ANTHROPIC_API_KEY=${apiKey} quaver-agent "${prompt.replace(/"/g, '\\"')}"\n`
+    `ANTHROPIC_API_KEY=${apiKey} quaver "${prompt.replace(/"/g, '\\"')}"\n`
   );
 
   const result = await ptyHandle.wait();
