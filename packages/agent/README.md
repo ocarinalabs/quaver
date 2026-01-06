@@ -213,22 +213,22 @@ const query = generateBenchmark(description, {
 Available tools:
 - `mcp__benchmark-tools__get_framework_info` - Get Quaver framework metadata
 
-## Prompts
+## CLI
 
-Built-in system prompt for benchmark generation:
+The package includes a `quaver` CLI for generating benchmarks:
 
-```typescript
-import { buildPrompt, SYSTEM_PROMPT } from "@quaver/agent/agent/prompts";
+```bash
+# Generate benchmark from prompt
+quaver "Create a benchmark for testing API rate limiting"
 
-// SYSTEM_PROMPT defines the benchmark generator role:
-// - Create evaluation environments for AI agents
-// - Define clear objectives and success criteria
-// - Include scoring rubrics and edge cases
-// - Output runnable test environments
-
-// buildPrompt wraps user description with instructions
-const prompt = buildPrompt("API rate limiting benchmark");
+# Interactive mode (reads from stdin)
+quaver --interactive
 ```
+
+The CLI outputs JSON-formatted messages with the following types:
+- `system_init` - Session initialized
+- `assistant` - Agent response
+- `result` - Generation completed
 
 ## Exports
 

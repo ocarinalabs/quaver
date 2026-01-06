@@ -7,6 +7,7 @@ Thin wrapper around the Daytona SDK for managing secure, isolated execution envi
 - **Sandbox Lifecycle** - Create, start, stop, archive, recover, and delete sandboxes
 - **Volume Management** - Persistent storage with subpath mounting for data sharing
 - **Snapshot Support** - Create pre-configured sandbox images for faster creation
+- **PTY Support** - Interactive terminal sessions and agent execution
 - **Multi-language** - TypeScript, Python, and other language runtimes
 - **Functional Design** - Pure async functions, no classes or stateful abstractions
 
@@ -19,8 +20,8 @@ bun add @quaver/sandbox
 ## Quick Start
 
 ```typescript
-import { createClient } from "@quaver/sandbox/utils/client";
-import { createSandbox, deleteSandbox } from "@quaver/sandbox/sandbox/lifecycle";
+import { createClient } from "@quaver/sandbox/client";
+import { createSandbox, deleteSandbox } from "@quaver/sandbox/sandbox";
 
 // Create client (reads DAYTONA_API_KEY from env)
 const client = createClient();
@@ -43,35 +44,14 @@ console.log(response.result); // "Hello from sandbox!"
 await deleteSandbox(sandbox);
 ```
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                      @quaver/sandbox                             │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
-│  │   Client    │    │  Lifecycle  │    │   Volume    │         │
-│  │   Factory   │───▶│  Functions  │───▶│  Storage    │         │
-│  └─────────────┘    └─────────────┘    └─────────────┘         │
-│         │                  │                  │                 │
-│         ▼                  ▼                  ▼                 │
-│  ┌─────────────────────────────────────────────────────┐       │
-│  │                  Daytona SDK                         │       │
-│  │    sandbox.process | sandbox.fs | sandbox.git       │       │
-│  └─────────────────────────────────────────────────────┘       │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
 ## Modules
 
-### Client (`@quaver/sandbox/utils/client`)
+### Client (`@quaver/sandbox/client`)
 
 Factory function for creating Daytona clients:
 
 ```typescript
-import { createClient } from "@quaver/sandbox/utils/client";
+import { createClient } from "@quaver/sandbox/client";
 
 // Default: reads from environment variables
 const client = createClient();
@@ -84,7 +64,7 @@ const client = createClient({
 });
 ```
 
-### Sandbox Lifecycle (`@quaver/sandbox/sandbox/lifecycle`)
+### Sandbox (`@quaver/sandbox/sandbox`)
 
 | Function | Description |
 |----------|-------------|
@@ -103,7 +83,7 @@ import {
   stopSandbox,
   startSandbox,
   deleteSandbox,
-} from "@quaver/sandbox/sandbox/lifecycle";
+} from "@quaver/sandbox/sandbox";
 
 // Create with language image
 const sandbox = await createSandbox(client, {
@@ -124,12 +104,41 @@ await startSandbox(sandbox);
 await deleteSandbox(sandbox);
 ```
 
-### Snapshot Lifecycle (`@quaver/sandbox/snapshot/lifecycle`)
+### PTY (`@quaver/sandbox/sandbox/pty`)
+
+Interactive terminal sessions for running commands and agents:
+
+```typescript
+import { createPty, runAgentViaPty, runCommandViaPty } from "@quaver/sandbox/sandbox/pty";
+
+// Run agent via PTY (Claude CLI)
+const result = await runAgentViaPty(
+  sandbox,
+  "Generate a benchmark for API rate limiting",
+  process.env.ANTHROPIC_API_KEY,
+  (data) => console.log("Agent:", data) // Optional streaming callback
+);
+
+// Run arbitrary command via PTY
+await runCommandViaPty(
+  sandbox,
+  "npm install && npm test",
+  (data) => console.log("Output:", data)
+);
+
+// Create raw PTY session
+const pty = await createPty(sandbox, {
+  cols: 80,
+  rows: 24,
+});
+```
+
+### Snapshot (`@quaver/sandbox/snapshot`)
 
 Create pre-configured sandbox images for faster creation:
 
 ```typescript
-import { createSnapshot } from "@quaver/sandbox/snapshot/lifecycle";
+import { createSnapshot } from "@quaver/sandbox/snapshot";
 
 const snapshot = await createSnapshot(
   client,
@@ -143,12 +152,12 @@ const snapshot = await createSnapshot(
 );
 ```
 
-### Volume Lifecycle (`@quaver/sandbox/volume/lifecycle`)
+### Volume (`@quaver/sandbox/volume`)
 
 Persistent storage that can be shared across sandboxes:
 
 ```typescript
-import { getVolume, deleteVolume } from "@quaver/sandbox/volume/lifecycle";
+import { getVolume, deleteVolume } from "@quaver/sandbox/volume";
 
 // Get or create volume
 const volume = await getVolume(client, "shared-data", true);
@@ -164,6 +173,28 @@ const sandbox = await createSandbox(client, {
 
 // Cleanup
 await deleteVolume(client, volume);
+```
+
+### Low-level API (`@quaver/sandbox/api`)
+
+Direct HTTP API access when SDK doesn't suffice:
+
+```typescript
+import { createDaytonaApi } from "@quaver/sandbox/api";
+
+const api = createDaytonaApi(process.env.DAYTONA_API_KEY);
+
+// Direct CRUD operations
+const sandbox = await api.create({ language: "typescript" });
+await api.start(sandbox.id);
+await api.stop(sandbox.id);
+await api.delete(sandbox.id);
+
+// Execute commands
+const result = await api.executeCommand(sandbox.id, "ls -la");
+
+// Wait for state changes
+await api.waitForState(sandbox.id, "running", 60000);
 ```
 
 ## SDK Direct Access
@@ -188,52 +219,6 @@ const data = JSON.parse(content.toString());
 // Environment variables
 await sandbox.env.set("API_KEY", "secret");
 const key = await sandbox.env.get("API_KEY");
-```
-
-## Usage Patterns
-
-### Agent + Benchmark Isolation
-
-```typescript
-import { createClient } from "@quaver/sandbox/utils/client";
-import { createSandbox, deleteSandbox } from "@quaver/sandbox/sandbox/lifecycle";
-import { getVolume, deleteVolume } from "@quaver/sandbox/volume/lifecycle";
-
-const client = createClient();
-
-// Shared volume for data exchange
-const volume = await getVolume(client, `run-${Date.now()}`, true);
-
-// Agent sandbox writes to /output
-const agentSandbox = await createSandbox(client, {
-  language: "typescript",
-  name: "agent",
-  volumes: [
-    { volumeId: volume.id, mountPath: "/output", subpath: "agent" },
-  ],
-});
-
-await agentSandbox.process.codeRun(`
-  fs.writeFileSync('/output/spec.json', JSON.stringify({ task: 'test' }));
-`);
-await agentSandbox.stop();
-
-// Benchmark sandbox reads from /input (same volume subpath)
-const benchmarkSandbox = await createSandbox(client, {
-  language: "typescript",
-  name: "benchmark",
-  volumes: [
-    { volumeId: volume.id, mountPath: "/input", subpath: "agent" },
-    { volumeId: volume.id, mountPath: "/output", subpath: "benchmark" },
-  ],
-});
-
-const spec = await benchmarkSandbox.fs.downloadFile("/input/spec.json");
-
-// Cleanup
-await deleteSandbox(agentSandbox);
-await deleteSandbox(benchmarkSandbox);
-await deleteVolume(client, volume);
 ```
 
 ## Configuration
@@ -261,40 +246,34 @@ await deleteVolume(client, volume);
 
 | Import Path | Description |
 |-------------|-------------|
-| `@quaver/sandbox/utils/client` | Client factory |
-| `@quaver/sandbox/sandbox/lifecycle` | Sandbox operations |
-| `@quaver/sandbox/snapshot/lifecycle` | Snapshot operations |
-| `@quaver/sandbox/volume/lifecycle` | Volume operations |
+| `@quaver/sandbox/client` | Client factory |
+| `@quaver/sandbox/sandbox` | Sandbox lifecycle operations |
+| `@quaver/sandbox/sandbox/pty` | PTY/terminal operations |
+| `@quaver/sandbox/snapshot` | Snapshot operations |
+| `@quaver/sandbox/volume` | Volume operations |
+| `@quaver/sandbox/api` | Low-level HTTP API |
 
-## SDK Types
+## Architecture
 
-Types are re-exported from `@daytonaio/sdk`:
-
-| Type | Description |
-|------|-------------|
-| `Daytona` | Client for all operations |
-| `Sandbox` | Sandbox instance with `.process`, `.fs`, `.git` |
-| `DaytonaConfig` | Configuration options |
-| `CreateSandboxFromImageParams` | Create from language image |
-| `CreateSandboxFromSnapshotParams` | Create from snapshot |
-| `Volume` | Volume for persistent storage |
-
-## Development
-
-```bash
-# Build
-bun run build
-
-# Type check
-bun run check-types
-
-# Lint
-npx ultracite check
-
-# Fix lint issues
-npx ultracite fix
 ```
-
-## License
-
-Private - Internal use only
+┌─────────────────────────────────────────────────────────────────┐
+│                      @quaver/sandbox                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│  │   Client    │    │  Lifecycle  │    │   Volume    │         │
+│  │   Factory   │───▶│  Functions  │───▶│  Storage    │         │
+│  └─────────────┘    └─────────────┘    └─────────────┘         │
+│         │                  │                  │                 │
+│         │           ┌─────────────┐          │                 │
+│         │           │     PTY     │          │                 │
+│         │           │  Terminal   │          │                 │
+│         │           └─────────────┘          │                 │
+│         ▼                  ▼                  ▼                 │
+│  ┌─────────────────────────────────────────────────────┐       │
+│  │                  Daytona SDK                         │       │
+│  │    sandbox.process | sandbox.fs | sandbox.git       │       │
+│  └─────────────────────────────────────────────────────┘       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```

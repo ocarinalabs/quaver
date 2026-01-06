@@ -1,6 +1,8 @@
 # @quaver/bench
 
-Benchmark boilerplate for creating AI agent benchmarks using the Quaver framework.
+Template for creating AI agent benchmarks. **Copy this folder and customize the [TODO] sections.**
+
+> This is a boilerplate package, not a reusable library. The code contains placeholder implementations that you must replace with your benchmark-specific logic.
 
 ## Features
 

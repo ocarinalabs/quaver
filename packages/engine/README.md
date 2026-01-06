@@ -2,6 +2,8 @@
 
 Orchestrates end-to-end benchmark execution across isolated Daytona sandboxes with shared volume data exchange.
 
+> **Note:** Benchmark execution is currently a stub implementation. The agent phase works via Claude CLI, but the benchmark phase returns mock results.
+
 ## Features
 
 - **Two-Sandbox Isolation** - Agent and benchmark run in separate sandboxes
@@ -23,12 +25,19 @@ import { runBenchmark } from "@quaver/engine/run";
 
 const result = await runBenchmark({
   prompt: "Create a benchmark for testing API rate limiting",
+  anthropicApiKey: process.env.ANTHROPIC_API_KEY!, // Required
   onProgress: (phase, message) => console.log(`[${phase}] ${message}`),
 });
 
 console.log(`Run ID: ${result.runId}`);
 console.log(`Score: ${result.results.score}`);
 ```
+
+## Requirements
+
+- **Claude CLI** - Must be installed (`npm i -g @anthropic-ai/claude-code`)
+- **Daytona API Key** - Set `DAYTONA_API_KEY` environment variable
+- **Anthropic API Key** - Passed in config or set `ANTHROPIC_API_KEY`
 
 ## Architecture
 
@@ -88,15 +97,15 @@ const result: RunResult = await runBenchmark(config);
 
 ```typescript
 type RunConfig = {
-  prompt: string;                                    // Benchmark description
-  agentModel?: string;                               // Model for agent phase
-  benchmarkModel?: string;                           // Model for benchmark phase
-  resources?: {
-    cpu?: number;
-    memory?: number;
-    disk?: number;
-  };
+  prompt: string;                    // Benchmark description
+  anthropicApiKey: string;           // Required: Anthropic API key
+  snapshotName?: string;             // Daytona snapshot (default: "quaver-agent")
   onProgress?: (phase: Phase, message: string) => void;
+
+  // Note: These are defined but not yet implemented
+  agentModel?: string;               // Model for agent phase (not implemented)
+  benchmarkModel?: string;           // Model for benchmark phase (not implemented)
+  resources?: { cpu?: number; memory?: number; disk?: number };
 };
 ```
 

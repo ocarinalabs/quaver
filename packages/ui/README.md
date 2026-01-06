@@ -88,18 +88,40 @@ Full set of components from [shadcn/ui](https://ui.shadcn.com):
 
 ### AI Elements
 
-Specialized components for AI-powered interfaces:
+30 specialized components for AI-powered interfaces:
 
 | Component | Description |
 |-----------|-------------|
 | `prompt-input` | Chat input with attachments, speech, and submit |
-| `web-preview` | Sandboxed iframe with navigation |
-| `code-block` | Syntax-highlighted code with copy |
 | `message` | Chat message bubbles |
 | `conversation` | Message thread container |
 | `reasoning` | Chain of thought display |
+| `chain-of-thought` | Reasoning visualization |
+| `code-block` | Syntax-highlighted code with Shiki |
+| `tool` | Tool execution display |
 | `artifact` | Generated content display |
 | `canvas` | Visual editing canvas |
+| `web-preview` | Sandboxed iframe with navigation |
+| `image` | Image display component |
+| `loader` | Loading states |
+| `shimmer` | Loading shimmer effect |
+| `sources` | Citation/source display |
+| `inline-citation` | Inline reference display |
+| `suggestion` | User suggestions UI |
+| `plan` | Planning display |
+| `task` | Task item display |
+| `queue` | Task queue display |
+| `checkpoint` | State checkpoint display |
+| `node` | Flow diagram nodes (via @xyflow/react) |
+| `edge` | Flow diagram edges |
+| `connection` | Graph connections |
+| `panel` | Container component |
+| `toolbar` | Toolbar component |
+| `controls` | Control components |
+| `context` | Context information display |
+| `confirmation` | Confirmation dialogs |
+| `model-selector` | Model selection UI |
+| `open-in-chat` | Open in chat action |
 
 ## Adding New Components
 
