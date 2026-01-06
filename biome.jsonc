@@ -16,6 +16,9 @@
       "!**/hooks/use-mobile.ts"
     ]
   },
+  "javascript": {
+    "globals": ["Bun"]
+  },
   "linter": {
     "rules": {
       "style": {

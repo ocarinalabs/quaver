@@ -20,14 +20,37 @@ RUN if [ -n "$GITHUB_TOKEN" ]; then \
     && cd /tmp/quaver \
     && bun install \
     && bun run --cwd packages/core build \
+    && bun run --cwd packages/bench build \
     && bun run --cwd packages/agent build \
-    && mkdir -p /home/daytona/node_modules/@quaver \
-    && cp -r packages/core /home/daytona/node_modules/@quaver/core \
-    && cp -r packages/agent /home/daytona/node_modules/@quaver/agent \
+    # Install @quaver/core as framework (dist only)
+    && mkdir -p /home/daytona/node_modules/@quaver/core \
+    && cp -r /tmp/quaver/packages/core/dist /home/daytona/node_modules/@quaver/core/dist \
+    && cp /tmp/quaver/packages/core/package.json /home/daytona/node_modules/@quaver/core/ \
+    # Install @quaver/bench as editable source (for copying)
+    && mkdir -p /home/daytona/bench \
+    && cp -r /tmp/quaver/packages/bench/src /home/daytona/bench/src \
+    && cp /tmp/quaver/packages/bench/package.json /home/daytona/bench/ \
+    && cp /tmp/quaver/packages/bench/tsconfig.json /home/daytona/bench/ \
+    && cp /tmp/quaver/packages/bench/README.md /home/daytona/bench/ \
+    # Create benchmarks workspace
+    && mkdir -p /home/daytona/benchmarks \
+    # Install @quaver/agent CLI (dist only)
+    && mkdir -p /home/daytona/node_modules/@quaver/agent \
+    && cp -r /tmp/quaver/packages/agent/dist /home/daytona/node_modules/@quaver/agent/dist \
+    && cp /tmp/quaver/packages/agent/package.json /home/daytona/node_modules/@quaver/agent/ \
+    # Install dependencies
+    && cd /home/daytona && bun add @anthropic-ai/claude-agent-sdk \
+    && ln -s /home/daytona/node_modules/@quaver/agent/dist/cli.js /usr/local/bin/quaver \
+    && chmod +x /home/daytona/node_modules/@quaver/agent/dist/cli.js \
+    # Install shell server
     && mkdir -p /home/daytona/shell \
-    && cp -r apps/shell/* /home/daytona/shell/ \
+    && cp /tmp/quaver/apps/shell/server.ts /home/daytona/shell/ \
     && rm -rf /tmp/quaver
 
-WORKDIR /home/daytona/shell
+# Copy Claude Code credentials (pre-authenticated)
+RUN mkdir -p /root/.claude
+COPY .credentials.json /root/.claude/.credentials.json
 
-ENTRYPOINT ["bun", "server.ts"]
+WORKDIR /home/daytona
+
+ENTRYPOINT ["bun", "/home/daytona/shell/server.ts"]
