@@ -62,6 +62,9 @@ export default function Home() {
       } catch (error) {
         console.error("Failed to create project:", error);
         setStatus("error");
+        setTimeout(() => {
+          setStatus("ready");
+        }, 2000);
       }
     },
     [createProject, router]
