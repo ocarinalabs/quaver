@@ -83,7 +83,7 @@ export const columns: ColumnDef<Project>[] = [
       </Button>
     ),
     cell: ({ row }) =>
-      formatDistanceToNow(row.original.createdAt, { addSuffix: true }),
+      formatDistanceToNow(row.getValue("created"), { addSuffix: true }),
   },
   // Actions dropdown
   {

@@ -37,6 +37,7 @@ export default function Home() {
   const [status, setStatus] = useState<
     "submitted" | "streaming" | "ready" | "error"
   >("ready");
+  const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = useCallback(
@@ -109,8 +110,11 @@ export default function Home() {
                 </PromptInputAttachments>
                 <PromptInputBody>
                   <PromptInputTextarea
+                    disabled={status !== "ready"}
+                    onChange={(e) => setText(e.target.value)}
                     placeholder="What do you want to evaluate?"
                     ref={textareaRef}
+                    value={text}
                   />
                 </PromptInputBody>
                 <PromptInputFooter>
