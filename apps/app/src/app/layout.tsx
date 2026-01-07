@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "@quaver/ui/globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
+import { Toaster } from "@quaver/ui/components/shadcn/sonner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { CommandMenu } from "@/components/command-menu";
@@ -56,6 +57,7 @@ export default function RootLayout({
             >
               {children}
               <CommandMenu />
+              <Toaster />
             </ThemeProvider>
           </ConvexClientProvider>
         </ClerkProvider>

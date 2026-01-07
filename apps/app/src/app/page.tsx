@@ -28,7 +28,8 @@ import {
 } from "@quaver/ui/components/sidebar";
 import { useAction } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 
 export default function Home() {
@@ -39,6 +40,15 @@ export default function Home() {
   >("ready");
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = useCallback(
     async (message: PromptInputMessage) => {
@@ -62,8 +72,10 @@ export default function Home() {
       } catch (error) {
         console.error("Failed to create project:", error);
         setStatus("error");
-        setTimeout(() => {
+        toast.error("Failed to create project. Retrying...");
+        timeoutRef.current = setTimeout(() => {
           setStatus("ready");
+          timeoutRef.current = null;
         }, 2000);
       }
     },
