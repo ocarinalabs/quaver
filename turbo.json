@@ -17,9 +17,6 @@
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
     "check-types": {
       "dependsOn": ["^check-types"]
     },
