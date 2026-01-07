@@ -7,6 +7,7 @@
     "start": "bun server.ts"
   },
   "devDependencies": {
+    "@quaver/typescript-config": "workspace:*",
     "@types/bun": "latest",
     "typescript": "^5"
   }
