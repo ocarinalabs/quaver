@@ -71,6 +71,7 @@ export const columns: ColumnDef<Project>[] = [
   },
   // Sortable created column
   {
+    id: "created",
     accessorKey: "createdAt",
     header: ({ column }) => (
       <Button
@@ -82,7 +83,7 @@ export const columns: ColumnDef<Project>[] = [
       </Button>
     ),
     cell: ({ row }) =>
-      formatDistanceToNow(row.getValue("createdAt"), { addSuffix: true }),
+      formatDistanceToNow(row.original.createdAt, { addSuffix: true }),
   },
   // Actions dropdown
   {
