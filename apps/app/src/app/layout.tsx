@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "@quaver/ui/globals.css";
+import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/themes";
 import { CommandMenu } from "@/components/command-menu";
@@ -57,6 +58,7 @@ export default function RootLayout({
             </ThemeProvider>
           </ConvexClientProvider>
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
